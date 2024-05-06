@@ -129,6 +129,7 @@ export async function deleteImage(imageId) {
   }
 
  export async function getAllImages() {
+    await connectDB();
     try {
       const images = await Image.find({});
       console.log('Images retrieved successfully');

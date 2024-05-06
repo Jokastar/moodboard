@@ -1,5 +1,4 @@
-import Image from "../schema/mongo/Image"
-import Tags from "../schema/mongo/Tags"
+
 class TrieNode {
     constructor() {
         this.children = {};
@@ -7,7 +6,7 @@ class TrieNode {
     }
 }
 
-class Trie {
+export default class Trie {
     constructor() {
         this.root = new TrieNode();
     }
@@ -33,6 +32,8 @@ class Trie {
     }
 
     wordsWithPrefix(prefix) {
+        if(prefix == "") return[]; 
+        
         let currentNode = this.root;
         for (let char of prefix) {
             if (!currentNode.children[char]) {
@@ -48,26 +49,5 @@ class Trie {
 
 
 
-async function initTrie(){
-    const SuggestionTrie = new Trie(); 
 
-try {
-   const imagesName = await Image.find({}).select('name');
-   const tags = await Tags.find({})
-
-   for(let name of imagesName){
-    SugesstionTrie.insert(name.name)
-   }
-
-   for(let tag of tags){
-    SuggestionTrie.insert(tag.tag); 
-   }
-
-   return SuggestionTrie;
-
-}catch(e){
-    console.log(error)
-}
-
-}
 
