@@ -47,4 +47,27 @@ class Trie {
 }
 
 
-const SugesstionTrie = new Trie(); 
+
+async function initTrie(){
+    const SuggestionTrie = new Trie(); 
+
+try {
+   const imagesName = await Image.find({}).select('name');
+   const tags = await Tags.find({})
+
+   for(let name of imagesName){
+    SugesstionTrie.insert(name.name)
+   }
+
+   for(let tag of tags){
+    SuggestionTrie.insert(tag.tag); 
+   }
+
+   return SuggestionTrie;
+
+}catch(e){
+    console.log(error)
+}
+
+}
+
