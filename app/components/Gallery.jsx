@@ -1,6 +1,11 @@
 import Link from 'next/link';
 
 function Gallery({ images }) {
+  if(!images || images.lenght < 1 ) {
+    return(
+      <div>No Images Found</div>
+    )
+  }
     return (
       <div className="flex flex-wrap gap-4">
         {images.map((image) => (

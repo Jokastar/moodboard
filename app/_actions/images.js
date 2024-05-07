@@ -128,15 +128,22 @@ export async function deleteImage(imageId) {
     }
   }
 
- export async function getAllImages() {
-    await connectDB();
+ export async function getAllImages(page) {
+    let limit = 10; 
+
     try {
-      const images = await Image.find({});
+      const images = await Image.find()
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+      // Count the total number of documents
+      const count = await Image.countDocuments();
       console.log('Images retrieved successfully');
-      return { success: true, message: 'Images retrieved successfully', data: images };
+      return {images:images, totalPages: Math.ceil(count / limit)}
     } catch (error) {
       console.error('Error retrieving images:', error);
-      return { success: false, message: 'Error retrieving images', error: error.toString() };
+      return []; 
     }
   }
 
@@ -151,6 +158,27 @@ export async function deleteImage(imageId) {
     } catch (error) {
       console.error('Error fetching image:', error);
       throw error;  // Rethrow or handle as needed
+    }
+  }
+
+  export async function getImagesByQuery(query){
+    try {  
+      const images = await Image.find({
+        $or: [
+          { name: { $regex: query, $options: 'i' } },  // Case insensitive search on name
+          { tags: { $regex: query, $options: 'i' } }   // Case insensitive search in tags array
+        ]
+      });
+
+      if (!images) {
+        console.log('No image found with ID:', id);
+        return [];  // or you could throw an error based on your error handling strategy
+      }
+      return images;
+    } catch (error) {
+      console.error('Error fetching image:', error);
+      throw error;  // Rethrow or handle as needed
+      return []
     }
   }
 
@@ -218,6 +246,33 @@ export async function deleteImage(imageId) {
     }
   }
   
+  async function getImagesByTags(userTags = []) {
+    try {
+        let tagValues = userTags;
+
+        // If no user tags are provided, fetch random tags
+        if (!tagValues.length) {
+            const randomTags = await Tag.aggregate([
+                { $sample: { size: 5 } }
+            ]);
+
+            if (!randomTags.length) throw new Error("No tags found");
+
+            // Extract tag values from the fetched tags
+            tagValues = randomTags.map(tag => tag.tag);
+        }
+
+        // Query images that contain any of the provided or randomly selected tags
+        const images = await Image.find({
+            tags: { $in: tagValues }
+        });
+
+        return images;
+    } catch (error) {
+        console.error("Error fetching images by tags:", error);
+        throw error;  // Rethrow or handle as needed
+    }
+}
 
 export async function uploadImageToCloudinary(imageBuffer) {
   return new Promise((resolve, reject) => {
