@@ -1,6 +1,5 @@
+import AuthContext from "./context/AuthContext";
 import "./globals.css";
-
-
 
 export const metadata = {
   title: "Create Next App",
@@ -9,8 +8,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
+    <AuthContext>
     <html lang="fr">
       <body>{children}</body>
     </html>
+    </AuthContext>
   );
 }

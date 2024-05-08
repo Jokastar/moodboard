@@ -9,9 +9,10 @@ import {addNewImage, updateImage} from '../_actions/images';
 function ImageForm({image}) {
     const [imageUrl, setImgUrl] = useState(null);
     const [tags, setTags] = useState([]);
-    const [currentTagValue, setCurrentTagValue] = useState("");
+    const [currentTagValue, setCurrentTagValue] = useState(null);
     const [file, setFile] = useState(null); 
     const [isLoading, setIsLoading] = useState(false); 
+    const [error, setError] = useState(""); 
     const [state, formAction] = useFormState(image ? updateImage : addNewImage, {})     
     const fileInputRef = useRef(null);
     const imageName = useRef(null); 
@@ -25,7 +26,12 @@ function ImageForm({image}) {
     }, [image])
 
     const handleImageChange = async (e) => {
+        setError(null); 
         const newFile = e.target.files[0]; // Works for both drag and drop and manual file selection
+        if(newFile && newFile.size > 10 * 1024 * 1024){
+            setError("Image file exceeds the authorize size"); 
+            return; 
+        }
         processImage(newFile);
     };
 
@@ -86,9 +92,10 @@ function ImageForm({image}) {
                     style={{ top: 0, left: 0}}
                     name='image'
                 />
-                {!imageUrl && !isLoading && <p>Drop your image here or click to select</p>}
-                {imageUrl && !isLoading && <img className='w-full h-full object-cover rounded-md' src={imageUrl} alt="image"/>}
-                {isLoading && <p>Image loading...</p>}
+                {!imageUrl && !isLoading && !error && <p>Drop your image here or click to select</p>}
+                {imageUrl && !isLoading && !error && <img className='w-full h-full object-cover rounded-md' src={imageUrl} alt="image"/>}
+                {isLoading && !error && <p>Image loading...</p>}
+                {error && <p>{error}</p>}
             </div>
             <div className='imageName flex flex-col py-3'>
                 <label htmlFor="name">Name</label>

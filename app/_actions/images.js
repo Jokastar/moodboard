@@ -129,7 +129,7 @@ export async function deleteImage(imageId) {
   }
 
  export async function getAllImages(page) {
-    let limit = 10; 
+    let limit = 5; 
 
     try {
       const images = await Image.find()
@@ -139,8 +139,8 @@ export async function deleteImage(imageId) {
 
       // Count the total number of documents
       const count = await Image.countDocuments();
-      console.log('Images retrieved successfully');
-      return {images:images, totalPages: Math.ceil(count / limit)}
+      console.log('Images retrieved successfully:');
+      return {requestedImages:images, totalPages: Math.ceil(count / limit)}
     } catch (error) {
       console.error('Error retrieving images:', error);
       return []; 
