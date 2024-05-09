@@ -3,11 +3,11 @@ import Link from 'next/link'
 
 function Header() {
   return (
-    <div>
-        <div>Logo</div>
+    <div className='flex items-center justify-between'>
+        <Link href="/">Home</Link>
         <Link href="/login">Login</Link>
     </div>
   )
 }
 
-export default Header
+export default Header; 

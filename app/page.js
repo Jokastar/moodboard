@@ -1,8 +1,10 @@
 "use client"
 
 import {useEffect, useState} from "react";  
+import Header from "./components/Header";
 import Gallery from "./components/Gallery";
 import SearchBar from "./components/SearchBar/SearchBar";
+import MenuBar from "./components/MenuBar";
 import { getAllImages, getImagesByQuery } from "./_actions/images";
 import { useSession } from "next-auth/react";
 
@@ -40,8 +42,10 @@ import { useSession } from "next-auth/react";
 }, [hasMore]);
   return (
     <>
+      <Header/>
       <SearchBar handleSubmit={handleSearchBarSubmit}/>
       <Gallery images={images}/>
+      <MenuBar/>
     </>
     
   );

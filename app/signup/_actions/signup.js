@@ -41,7 +41,7 @@ export async function signUp(prevState, formData) {
     } catch (error) {
         console.log("Error during sign-up:", error)
     } 
-    if(userCreated) redirect("/")
+    if(userCreated) redirect("/login")
 }
 
 

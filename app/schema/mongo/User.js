@@ -17,6 +17,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    collections:[
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Collection' // Reference the Image model
+          }
+    ]
 }, { timestamps: true });
 
 const User = mongoose.models?.User || mongoose.model('User', userSchema); 

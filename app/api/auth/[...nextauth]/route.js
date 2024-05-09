@@ -19,10 +19,8 @@ export const authOptions = {
       },
       async authorize(credentials, req) {
 
-        const { email, password } = credentials;
-        console.log(credentials); 
-        return {email:email}
-       /* try {
+        const { name, email, password } = credentials;
+        try {
           // Find the user by email
           const user = await User.findOne({ email });
           if (!user) {
@@ -42,7 +40,7 @@ export const authOptions = {
       } catch (error) {
           console.log('Error verifying login:', error);
           return null; 
-      } */
+      } 
   }
  })
 ]
