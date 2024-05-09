@@ -39,7 +39,7 @@ function ImageInfo() {
 
     return (
         <div>
-            <ImageCard image={image} /> 
+            <ImageCard image={image} imageId={id} /> 
         </div>
     );
 }

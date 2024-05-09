@@ -10,9 +10,17 @@ const imageSchema = new mongoose.Schema({
       type: String,
       required: [true, 'Image URL is required']
     },
+    imageCardUrl:{
+      type:String,
+      required:true
+    }, 
     imageCloudinaryId:{
         type:String,
         required: true
+    },
+    imageCardCloudinaryId:{
+      type:String,
+      required:true
     },
     tags: [{
       type: String,

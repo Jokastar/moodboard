@@ -7,11 +7,9 @@ import cloudinary from "@/app/lib/connectCloudinary";
 import ImageSchema from "@/app/schema/zod/imageSchema";
 import Image from "@/app/schema/mongo/Image";
 import Tag from "../schema/mongo/Tag";
+import sharp from "sharp";
 
 import { Buffer } from 'buffer';
-
-
-
 
 //const openai = new OpenAI({apiKey:process.env.OPENAI_KEY});
 
@@ -83,17 +81,29 @@ export async function addNewImage(prevState, formData) {
     let tags = JSON.parse(tagsString || "[]");
 
     // Get buffer from imageFile
-    const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
+    const imageFileToBuffer = Buffer.from(await imageFile.arrayBuffer());
+
+    //Change image format and size; 
+    const {imageBuffer, imageCardBuffer, error} = await changeImageFormat(imageFileToBuffer); 
+
+    if(error){
+      console.log("failed changing image format " + error);
+      return;  
+    }
 
     // Upload the image file to Cloudinary
-    const uploadResult = await uploadImageToCloudinary(imageBuffer, imageName);
-    console.log('Upload successful:', uploadResult);
+    const uploadImageResult = await uploadImageToCloudinary(imageBuffer, imageName);
+    const uploadImageCardResult = await uploadImageToCloudinary(imageCardBuffer, imageName)
+    console.log('Upload successful:', uploadImageResult);
+    console.log('Upload successful:', uploadImageCardResult);
 
     //upload image to MongoDB
     const newImage = new Image({
       name: imageName,
-      imageUrl: uploadResult.url, // Use the URL from Cloudinary upload result
-      imageCloudinaryId : uploadResult.public_id,
+      imageUrl: uploadImageResult.url, // Use the URL from Cloudinary upload result
+      imageCardUrl:uploadImageCardResult.url,
+      imageCloudinaryId: uploadImageResult.public_id,
+      imageCardCloudinaryId:uploadImageCardResult.public_id,
       tags: tags
     });
 
@@ -107,27 +117,39 @@ export async function addNewImage(prevState, formData) {
 
     return {success: true, message: 'Image uploaded and saved successfully'};
   } catch (error) {
-    console.error('Failed to upload or save image:', error);
+    console.log('Failed to upload or save image:', error);
     return { success: false, message: 'Failed to upload or save image', error: error.toString()};
   }
 }
 
 export async function deleteImage(imageId) {
-    try {
-      const result = await Image.findByIdAndDelete(imageId);
-      if (result) {
-        console.log('Image deleted successfully');
-        return { success: true, message: 'Image deleted successfully', data: result };
-      } else {
-        console.log('Image not found');
-        return { success: false, message: 'Image not found' };
+  try {
+      // First, find the image document in MongoDB
+      const imageToDelete = await Image.findById(imageId);
+      if (!imageToDelete) {
+          console.log('Image not found');
+          return { success: false, message: 'Image not found' };
       }
-    } catch (error) {
+
+      // Delete the image from Cloudinary using the stored public_id
+      const cloudinaryResponse = await deleteImageFromCloudinary(imageToDelete.imageCloudinaryId);
+      console.log('Cloudinary delete response:', cloudinaryResponse);
+
+      // If needed, also delete a secondary image or image card
+      if (imageToDelete.imageCardCloudinaryId) {
+          const cloudinaryCardResponse = await deleteImageFromCloudinary(imageToDelete.imageCardCloudinaryId);
+          console.log('Cloudinary card delete response:', cloudinaryCardResponse);
+      }
+
+      // Only after successful deletion from Cloudinary, delete the document from MongoDB
+      const deletedImage = await Image.findByIdAndDelete(imageId);
+      console.log('Image deleted successfully from MongoDB and Cloudinary');
+      return { success: true, message: 'Image deleted successfully', data: deletedImage };
+  } catch (error) {
       console.error('Error deleting image:', error);
       return { success: false, message: 'Error deleting image', error: error.toString() };
-    }
   }
-
+}
  export async function getAllImages(page) {
     let limit = 5; 
 
@@ -199,29 +221,40 @@ export async function deleteImage(imageId) {
       // Check if there is a new image file and upload it
       if (imageFile && imageFile.size > 0) {
 
-        const imageBuffer = Buffer.from(await imageFile.arrayBuffer());
-        const uploadResult = await uploadImageToCloudinary(imageBuffer);
+        const imageFileToBuffer = Buffer.from(await imageFile.arrayBuffer());
+        const {imageBuffer, imageCardBuffer, error} = await changeImageFormat(imageFileToBuffer); 
 
-        //get the image's cloudinaryId
-        let {imageCloudinaryId} = await Image.findById(imageId).select("imageCloudinaryId");
-        if (!imageCloudinaryId) {
+        if(error){
+          console.log("failed changing image format " + error);
+          return;  
+        }
+
+         //get the image
+        let imageToUpdate = await Image.findById(imageId);
+        if (!imageToUpdate) {
             console.log('Image not found');
             return { success: false, message: 'Image not found' };
         }
+
+        const uploadImageResult = await uploadImageToCloudinary(imageBuffer);
+        const uploadImageCardResult = await uploadImageToCloudinary(imageCardBuffer)
+
   
-          let imageUrl = uploadResult.url; // Update the imageUrl with the new URL from Cloudinary
           updatedImage = await Image.findByIdAndUpdate(imageId, {
           $set: {
             name: name,
-            imageUrl: imageUrl,
-            imageCloudinaryId: uploadResult.public_id,
+            imageUrl: uploadImageResult.url,
+            imageCardUrl:uploadImageCardResult.url,
+            imageCloudinaryId: uploadImageResult.public_id,
+            imageCardCloudinaryId:uploadImageCardResult.public_id,
             tags: tags
           }
         }, { new: true, omitUndefined: true });
 
-        if (imageCloudinaryId && imageCloudinaryId !== uploadResult.public_id) {
-          console.log(imageCloudinaryId)
-          await deleteImageFromCloudinary(imageCloudinaryId);
+        if (imageToUpdate.imageCloudinaryId && imageToUpdate.imageCloudinaryId !== uploadImageResult.public_id) {
+          console.log("i am here"); 
+          await deleteImageFromCloudinary(imageToUpdate.imageCloudinaryId);
+          await deleteImageFromCloudinary(imageToUpdate.imageCardCloudinaryId);
       }
       }
   
@@ -301,4 +334,25 @@ export async function deleteImageFromCloudinary(publicId) {
       });
     });
   }
+
+async function changeImageFormat(imageBuffer){
+  try{
+    const newImageBuffer = await sharp(imageBuffer)
+    .resize(1024, 768) // Optional: Resize if needed
+    .toFormat('webp') // Convert to webp
+    .toBuffer();
+
+    const imageCardBuffer = await sharp(imageBuffer)
+    .resize(600, 600)
+    .toFormat('webp')
+    .toBuffer()
+
+    return{imageBuffer:newImageBuffer, imageCardBuffer:imageCardBuffer, error:false};
+
+  }catch(e){
+    return{error:e}
+  }
+  
+
+}
 

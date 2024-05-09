@@ -14,8 +14,8 @@ function ImageForm({image}) {
     const [isLoading, setIsLoading] = useState(false); 
     const [error, setError] = useState(""); 
     const [state, formAction] = useFormState(image ? updateImage : addNewImage, {})     
-    const fileInputRef = useRef(null);
-    const imageName = useRef(null); 
+    const fileInputRef = useRef("");
+    const imageName = useRef(""); 
 
     useEffect(()=>{
         if(image){
