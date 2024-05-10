@@ -1,37 +1,50 @@
+"use server"; 
+
 import Collection from "../schema/mongo/Collection";
 import User from "../schema/mongo/User";  
+import Image from "../schema/mongo/Image"
+import { convertObjectIdsToStrings } from "../lib/convertObjectIdsToStrings";
 
-export async function createCollection(name) {
-    try {
-      const newCollection = new Collection({ name });
+export async function createCollection(userId, name) {
+  
+  try {
+      const newCollection = new Collection({ name, userId });
       await newCollection.save();
-      console.log('Collection created successfully:', newCollection);
+
+      const user = await User.findById(userId);
+      if (!user) {
+          console.error('User not found');
+          return { success: false, message: 'User not found' };
+      }
+
+      user.collections.push(newCollection);  // Store the whole collection document
+      await user.save();
+
+      console.log('Collection created successfully and added to user:', newCollection);
       return { success: true, collection: newCollection };
-    } catch (error) {
+  } catch (error) {
       console.error('Error creating collection:', error);
       return { success: false, error: error.message };
-    }
   }
-
-  
+}
 export async function addImageToCollection(collectionId, imageId) {
     try {
-      const collection = await Collection.findById(collectionId);
+      const collection = await Collection.findOne({_id:collectionId});
       if (!collection) {
         console.error('Collection not found');
         return { success: false, message: 'Collection not found' };
       }
   
-      const image = await Image.findById(imageId);
+      const image = await Image.findOne({_id: imageId});
       if (!image) {
         console.error('Image not found');
         return { success: false, message: 'Image not found' };
       }
   
-      collection.images.push(image._id);
+      collection.images.push(image);
       await collection.save();
       console.log('Image added to collection successfully:', collection);
-      return { success: true, collection };
+      return { success: true};
     } catch (error) {
       console.error('Error adding image to collection:', error);
       return { success: false, error: error.message };
@@ -74,14 +87,16 @@ export async function deleteCollection(collectionId) {
 
 export async function getCollections(userId) {
     try {
-      const user = await User.findById(userId).populate('collections');
-      if (!user) {
-        console.error('User not found');
-        return { success: false, message: 'User not found' };
+      const collections = await Collection.findOne({userId:userId});
+      if (!collections) {
+        console.error('collection not found');
+        return { success: false, message: 'Collection not found' };
       }
       
-      console.log('Collections retrieved successfully:', user.collections);
-      return { success: true, collections: user.collections };
+      console.log('Collections retrieved successfully:', collections);
+      
+    const updateCollection = convertObjectIdsToStrings(collections); 
+      return { success: true, collections:[updateCollection]};
     } catch (error) {
       console.log('Error retrieving collections:', error);
       return { success: false, message: 'Error retrieving collections', error: error.message };

@@ -42,7 +42,6 @@ import { useSession } from "next-auth/react";
 }, [hasMore]);
   return (
     <>
-      <Header/>
       <SearchBar handleSubmit={handleSearchBarSubmit}/>
       <Gallery images={images}/>
       <MenuBar/>

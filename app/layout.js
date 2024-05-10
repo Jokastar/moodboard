@@ -1,4 +1,5 @@
 import AuthContext from "./context/AuthContext";
+import Header from "./components/Header"; // Adjust the path if necessary
 import "./globals.css";
 
 export const metadata = {
@@ -9,9 +10,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <AuthContext>
-    <html lang="fr">
-      <body>{children}</body>
-    </html>
+      <html lang="fr">
+        <body>
+          <Header /> {/* Add the Header component here */}
+          {children}
+        </body>
+      </html>
     </AuthContext>
   );
 }
+

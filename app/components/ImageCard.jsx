@@ -1,6 +1,7 @@
 
 import Link from "next/link";
 import { deleteImage} from "../_actions/images";
+import CollectionModal from "./CollectionModal";
 
 const ImageCard = ({ image, imageId }) => {
     return (
@@ -14,6 +15,7 @@ const ImageCard = ({ image, imageId }) => {
                 <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
                    <li className="bg-red-600 text-white p-2" onClick={()=>deleteImage(image._id)}>delete</li>
                     <li><Link href={`/${imageId}/edit`}>edit</Link></li>
+                    <li><CollectionModal/></li>
                 </ul>
             </div>
         </div>
