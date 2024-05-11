@@ -171,8 +171,9 @@ export async function deleteImage(imageId) {
   }
 
   export async function getImageById(id) {
+    console.log("imageId" + id); 
     try {  
-      const image = await Image.findById(id).lean();
+      const image = await Image.findOne({_id:id}).lean();
       if (!image) {
         console.log('No image found with ID:', id);
         return null;  // or you could throw an error based on your error handling strategy
@@ -191,8 +192,8 @@ export async function deleteImage(imageId) {
         
         // Use Mongoose find with $in operator
         const images = await Image.find({ _id: { $in: objectIds } });
-        const modofiedImages = convertObjectIdsToStrings(images); 
-        return modofiedImages;
+        const modifiedImages = convertObjectIdsToStrings(images); 
+        return modifiedImages;
     } catch (error) {
         console.log('Error fetching images:', error);
         throw new Error('Error fetching images');

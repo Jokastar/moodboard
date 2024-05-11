@@ -55,25 +55,24 @@ export async function addImageToCollection(collectionId, imageId) {
       return { success: false, error: error.message };
     }
   }
-
-
-export async function deleteImageFromCollection(collectionId, imageId) {
-  try {
-    const collection = await Collection.findById(collectionId);
-    if (!collection) {
-      console.error('Collection not found');
-      return { success: false, message: 'Collection not found' };
-    }
-
-    collection.images = collection.images.filter(imgId => imgId.toString() !== imageId);
-    await collection.save();
-    console.log('Image removed from collection successfully:', collection);
-    return { success: true, collection };
-  } catch (error) {
-    console.error('Error removing image from collection:', error);
-    return { success: false, error: error.message };
+  
+  export async function removeImageFromCollection(collectionId, imageId) {
+      try {
+          const collection = await Collection.findByIdAndUpdate(
+              collectionId,
+              { $pull: { images: imageId } },
+              { new: true }
+          );
+          if (!collection) {
+              return { success: false, message: 'Collection not found' };
+          }
+          return { success: true};
+      } catch (error) {
+          console.error('Error removing image from collection:', error);
+          return { success: false, message: 'Error removing image from collection', error: error.message };
+      }
   }
-}
+  
 
 export async function deleteCollection(collectionId) {
   try {
@@ -92,7 +91,7 @@ export async function deleteCollection(collectionId) {
 
 export async function getCollections(userId) {
     try {
-      const collections = await Collection.findOne({userId:userId});
+      const collections = await Collection.find({userId:userId});
       if (!collections) {
         console.error('collection not found');
         return { success: false, message: 'Collection not found' };
@@ -102,14 +101,14 @@ export async function getCollections(userId) {
       
     const updatedCollection = convertObjectIdsToStrings(collections);
 
-      return { success: true, collections:[updatedCollection]};
+      return { success: true, collections:updatedCollection};
     } catch (error) {
       console.log('Error retrieving collections:', error);
       return { success: false, message: 'Error retrieving collections', error: error.message };
     }
   }
 
-  export async function getCollectionsForModal(userId) {
+export async function getCollectionsForModal(userId) {
     try {
       let collections = await Collection.findOne({userId:userId});
 
@@ -135,6 +134,30 @@ export async function getCollections(userId) {
       return { success: false, message: 'Error retrieving collections', error: error.message };
     }
   }
+
+  export async function getCollectionById(collectionId) {    
+    try {
+        const collection = await Collection.findOne({ _id: collectionId }).populate('images');
+        if (!collection) {
+            console.error('Collection not found');
+            return { success: false, message: 'Collection not found' };
+        }
+
+        // Convert _id and images' ObjectIds to strings
+        const collectionWithStrings = {
+            _id: collection._id.toString(),
+            name: collection.name,
+            images: collection.images.map(image => image._id.toString())
+        };
+
+        console.log('Collection retrieved successfully:', collectionWithStrings);
+
+        return { success: true, collection: collectionWithStrings };
+    } catch (error) {
+        console.error('Error retrieving collection:', error);
+        return { success: false, message: 'Error retrieving collection', error: error.message };
+    }
+}
 
 
   

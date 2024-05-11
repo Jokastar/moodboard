@@ -4,6 +4,7 @@ import { getCollections } from '../_actions/collection';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getImageById } from '../_actions/images';
+
 const CollectionsGrid = () => {
     const [collections, setCollections] = useState([]);
     const { data: session, status } = useSession();
@@ -15,15 +16,16 @@ const CollectionsGrid = () => {
                 try {
                     const result = await getCollections(session.user.id);
                     if (result.success) {
-                        const collectionsWithImages = await Promise.all(result.collections.map(async (collection) => {
-                            const image = collection.images[0] 
-                                ? await getImageById(collection.images[0]) : "";
+                        //add the imageUrl of the first image of each collection as a fields
+                        const modifiedCollections = await Promise.all(result.collections.map(async (collection) => {
+                            console.log(JSON.stringify(collection)); 
+                            const image = collection.images[0] ? await getImageById(collection.images[0]) : "";
 
                             let imageUrl = image.imageCardUrl
-                            return { ...collection, imageUrl};
+                            return {...collection, imageUrl}; 
                         }));
-                        console.log('Collections fetched with images:', JSON.stringify(collectionsWithImages, null, 2));
-                        setCollections(collectionsWithImages);
+                        console.log('Collections fetched with images:', JSON.stringify(modifiedCollections, null, 2));
+                        setCollections(modifiedCollections);
                     }
                 } catch (error) {
                     console.error("Failed to fetch collections", error);
@@ -34,7 +36,7 @@ const CollectionsGrid = () => {
         if (status === "authenticated") {
             fetchCollections();
         }
-    }, [status, session]);
+    }, [status]);
 
     const handleCollectionClick = (collectionId) => {
         router.push(`/collections/${collectionId}`);

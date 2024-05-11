@@ -4,7 +4,7 @@ import React from 'react'
 function MenuBar() {
   return (
         <div className='flex justify-evenly items-center rounded-md bg-black text-white w-[600px] text-[12px]'>
-            <Link href="/mycollections">View your collections</Link>
+            <Link href="/collections">View your collections</Link>
             <Link href="/newimage">Add new image</Link>
             <div className="dropdown dropdown-top">
                 <div tabIndex={0} role="button" className="btn">generate moodboard</div>
