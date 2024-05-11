@@ -1,8 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { getCollections, createCollection, addImageToCollection } from '../_actions/collection';
+import { getCollectionsForModal, createCollection, addImageToCollection } from '../_actions/collection';
 import { useSession } from 'next-auth/react';
-import PreviousMap from 'postcss/lib/previous-map';
 
 function CollectionModal() {
     const [collections, setCollections] = useState([]);
@@ -13,7 +12,7 @@ function CollectionModal() {
         const getUserCollections = async () => {
             if (status === "authenticated" && session) {
                 try {
-                    const result = await getCollections(session.user.id);
+                    const result = await getCollectionsForModal(session.user.id);
 
                     if (result.success) {
                         setCollections(result.collections);
@@ -29,22 +28,24 @@ function CollectionModal() {
 
     const handleAddImage = async (collectionId) => {
         const imageId = window.location.pathname.split('/').pop(); // Extract imageId from URL
-
+    
         try {
             const result = await addImageToCollection(collectionId, imageId);
-
+    
             if (result.success) {
                 console.log('Image added to collection successfully!');
+                alert('Image added to collection successfully!');
             } else {
                 console.log('Failed to add image to collection: ' + result.message);
+                alert('Failed to add image to collection: ' + result.message);
             }
-            return;
         } catch (error) {
             console.log('Error adding image to collection:', error);
-            return;
+            alert('Error adding image to collection');
         }
+        document.getElementById('my_modal_3').close();
     };
-
+    
     const handleCreateCollection = async () => {
         try {
             const result = await createCollection(session.user.id, newCollectionName);
@@ -78,10 +79,9 @@ function CollectionModal() {
                             <button className="btn" onClick={() => document.getElementById('create_collection_modal').showModal()}>Create Collection</button>
                         </div>
                     ) : (
-                        <div className="collections-list">
+                        <div className="collections-list hover:bg-slate-300 w-full">
                             {collections.map((collection) => (
                                 <div key={collection._id} className="collection-item" onClick={() => handleAddImage(collection._id, session.user.id)}>
-                                    <img src={""} alt={collection.name} className="collection-image w-4 h-4 cover" />
                                     <p className="collection-name">{collection.name}</p>
                                 </div>
                             ))}

@@ -10,6 +10,7 @@ import Tag from "../schema/mongo/Tag";
 import sharp from "sharp";
 
 import { Buffer } from 'buffer';
+import { convertObjectIdsToStrings } from "../lib/convertObjectIdsToStrings";
 
 //const openai = new OpenAI({apiKey:process.env.OPENAI_KEY});
 
@@ -182,6 +183,21 @@ export async function deleteImage(imageId) {
       throw error;  // Rethrow or handle as needed
     }
   }
+
+  export async function getImagesByIds(imageIds) {
+    try {
+        // Convert string IDs to Mongoose ObjectId
+        const objectIds = imageIds.map(id => mongoose.Types.ObjectId(id));
+        
+        // Use Mongoose find with $in operator
+        const images = await Image.find({ _id: { $in: objectIds } });
+        const modofiedImages = convertObjectIdsToStrings(images); 
+        return modofiedImages;
+    } catch (error) {
+        console.log('Error fetching images:', error);
+        throw new Error('Error fetching images');
+    }
+}
 
   export async function getImagesByQuery(query){
     try {  

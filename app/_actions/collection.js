@@ -37,9 +37,14 @@ export async function addImageToCollection(collectionId, imageId) {
   
       const image = await Image.findOne({_id: imageId});
       if (!image) {
-        console.error('Image not found');
+        console.log('Image not found');
         return { success: false, message: 'Image not found' };
       }
+
+      if (collection.images.some(imgId => imgId.toString() === imageId)) {
+        console.log('Image already in collection');
+        return { success: false, message: 'Image already in collection' };
+    }
   
       collection.images.push(image);
       await collection.save();
@@ -95,8 +100,36 @@ export async function getCollections(userId) {
       
       console.log('Collections retrieved successfully:', collections);
       
-    const updateCollection = convertObjectIdsToStrings(collections); 
-      return { success: true, collections:[updateCollection]};
+    const updatedCollection = convertObjectIdsToStrings(collections);
+
+      return { success: true, collections:[updatedCollection]};
+    } catch (error) {
+      console.log('Error retrieving collections:', error);
+      return { success: false, message: 'Error retrieving collections', error: error.message };
+    }
+  }
+
+  export async function getCollectionsForModal(userId) {
+    try {
+      let collections = await Collection.findOne({userId:userId});
+
+      if (!collections) {
+        console.error('collection not found');
+        return { success: false, message: 'Collection not found' };
+      }
+      
+      if(Array.isArray(collections)){
+          collections = collections.map(collection => ({
+          _id: collection._id.toString(),
+          name: collection.name,
+          image: collection.images[0] ? collection.images[0].toString() : ""
+      }));
+      }
+
+    console.log('Collections retrieved successfully:'+ collections);
+
+    return { success: true, collections: Array.isArray(collections) ? collections : [{_id:collections._id, name:collections.name, images:collections.images[0].toString()}]};
+  
     } catch (error) {
       console.log('Error retrieving collections:', error);
       return { success: false, message: 'Error retrieving collections', error: error.message };

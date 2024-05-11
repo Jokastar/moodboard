@@ -1,7 +1,6 @@
 "use client"
 
 import {useEffect, useState} from "react";  
-import Header from "./components/Header";
 import Gallery from "./components/Gallery";
 import SearchBar from "./components/SearchBar/SearchBar";
 import MenuBar from "./components/MenuBar";
