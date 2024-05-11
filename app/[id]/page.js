@@ -1,14 +1,14 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import ImageCard from '../components/ImageCard';
 import { getImageById } from '../_actions/images';
-
 
 function ImageInfo() {
     const [image, setImage] = useState(null);
     const [error, setError] = useState(null);
     const pathname = usePathname();
+    const router = useRouter();
     const id = pathname.replace(/\//g, ''); // Clean the pathname to get the ID
 
     useEffect(() => {
@@ -39,7 +39,8 @@ function ImageInfo() {
 
     return (
         <div>
-            <ImageCard image={image} imageId={id} /> 
+            <button onClick={() => router.back()}>Go Back</button> {/* Go Back button */}
+            <ImageCard image={image} imageId={id} />
         </div>
     );
 }

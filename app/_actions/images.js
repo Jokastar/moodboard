@@ -10,7 +10,7 @@ import Tag from "../schema/mongo/Tag";
 import sharp from "sharp";
 
 import { Buffer } from 'buffer';
-import { convertObjectIdsToStrings } from "../lib/convertObjectIdsToStrings";
+import { redirect } from "next/navigation";
 
 //const openai = new OpenAI({apiKey:process.env.OPENAI_KEY});
 
@@ -60,6 +60,7 @@ export async function addNewImage(prevState, formData) {
   const imageName = formData.get('name');
   const imageFile = formData.get('image');
   const tagsString = formData.get('tags');
+  let success = false; 
 
   if (!imageName || !imageFile) {
       console.error('Missing required fields');
@@ -112,15 +113,23 @@ export async function addNewImage(prevState, formData) {
     await newImage.save(); 
 
     if(tags.lenght > 0){
-      await Tag.insertMany(tags, { ordered: false });
+      for(let tag of tags){
+        const tag = new Tags({
+          tag:tag
+        })
+        await tag.save()
+      }
     }
     
 
-    return {success: true, message: 'Image uploaded and saved successfully'};
+    success = true; 
   } catch (error) {
     console.log('Failed to upload or save image:', error);
     return { success: false, message: 'Failed to upload or save image', error: error.toString()};
   }
+
+  if(success) redirect("/")
+
 }
 
 export async function deleteImage(imageId) {
@@ -187,13 +196,12 @@ export async function deleteImage(imageId) {
 
   export async function getImagesByIds(imageIds) {
     try {
-        // Convert string IDs to Mongoose ObjectId
-        const objectIds = imageIds.map(id => mongoose.Types.ObjectId(id));
+        
         
         // Use Mongoose find with $in operator
-        const images = await Image.find({ _id: { $in: objectIds } });
-        const modifiedImages = convertObjectIdsToStrings(images); 
-        return modifiedImages;
+        const images = await Image.find({ _id: { $in: imageIds } });
+        console.log("image retrieved successfully: " + images); 
+        return images
     } catch (error) {
         console.log('Error fetching images:', error);
         throw new Error('Error fetching images');
@@ -221,82 +229,95 @@ export async function deleteImage(imageId) {
     }
   }
 
- export async function updateImage(prevState, formData) {
-  console.log(formData); 
-
+  export async function updateImage(prevState, formData) {
     try {
-      const imageId = formData.get('imageId');
-      const name = formData.get('name');
-      const tagsString = formData.get('tags');
-      const imageFile = formData.get('image');
-      let updatedImage; 
-      
+        const imageId = formData.get('imageId');
+        const name = formData.get('name');
+        const tagsString = formData.get('tags');
+        const imageFile = formData.get('image');
 
-      // Parse tags if provided
-      const tags = tagsString ? JSON.parse(tagsString) : [];
-  
-      // Check if there is a new image file and upload it
-      if (imageFile && imageFile.size > 0) {
+        // Parse tags if provided
+        const tags = tagsString ? JSON.parse(tagsString) : [];
 
-        const imageFileToBuffer = Buffer.from(await imageFile.arrayBuffer());
-        const {imageBuffer, imageCardBuffer, error} = await changeImageFormat(imageFileToBuffer); 
+        // Check if there is a new image file and upload it
+        if (imageFile && imageFile.size > 0) {
+            const imageFileToBuffer = Buffer.from(await imageFile.arrayBuffer());
+            const { imageBuffer, imageCardBuffer, error } = await changeImageFormat(imageFileToBuffer);
 
-        if(error){
-          console.log("failed changing image format " + error);
-          return;  
+            if (error) {
+                console.log("failed changing image format " + error);
+                return;
+            }
+
+            // Get the image
+            let imageToUpdate = await Image.findById(imageId);
+            if (!imageToUpdate) {
+                console.log('Image not found');
+                return { success: false, message: 'Image not found' };
+            }
+
+            const uploadImageResult = await uploadImageToCloudinary(imageBuffer);
+            const uploadImageCardResult = await uploadImageToCloudinary(imageCardBuffer);
+
+            // Update the image document in MongoDB
+            const updatedImage = await Image.findByIdAndUpdate(imageId, {
+                $set: {
+                    name: name,
+                    imageUrl: uploadImageResult.url,
+                    imageCardUrl: uploadImageCardResult.url,
+                    imageCloudinaryId: uploadImageResult.public_id,
+                    imageCardCloudinaryId: uploadImageCardResult.public_id,
+                    tags: tags
+                }
+            }, { new: true, omitUndefined: true });
+
+            // Delete old images from Cloudinary if new images are uploaded
+            if (imageToUpdate.imageCloudinaryId && imageToUpdate.imageCloudinaryId !== uploadImageResult.public_id) {
+                await deleteImageFromCloudinary(imageToUpdate.imageCloudinaryId);
+                await deleteImageFromCloudinary(imageToUpdate.imageCardCloudinaryId);
+            }
+
+            // Save tags if any
+            if (tags.length > 0) {
+                for (let tag of tags) {
+                    const tagDoc = new Tag({ tag: tag });
+                    await tagDoc.save();
+                }
+            }
+
+            if (updatedImage) {
+                console.log('Image updated successfully');
+                return { success: true, message: 'Image updated successfully', data: updatedImage };
+            } else {
+                console.log('Image not found');
+                return { success: false, message: 'Image not found' };
+            }
+        } else {
+            // Update name and tags if no new image file is uploaded
+            const updatedImage = await Image.findByIdAndUpdate(imageId, {
+                $set: {
+                    name: name,
+                    tags: tags
+                }
+            }, { new: true, omitUndefined: true });
+
+            if (updatedImage) {
+                console.log('Image updated successfully');
+                return { success: true, message: 'Image updated successfully', data: updatedImage };
+            } else {
+                console.log('Image not found');
+                return { success: false, message: 'Image not found' };
+            }
         }
-
-         //get the image
-        let imageToUpdate = await Image.findById(imageId);
-        if (!imageToUpdate) {
-            console.log('Image not found');
-            return { success: false, message: 'Image not found' };
-        }
-
-        const uploadImageResult = await uploadImageToCloudinary(imageBuffer);
-        const uploadImageCardResult = await uploadImageToCloudinary(imageCardBuffer)
-
-  
-          updatedImage = await Image.findByIdAndUpdate(imageId, {
-          $set: {
-            name: name,
-            imageUrl: uploadImageResult.url,
-            imageCardUrl:uploadImageCardResult.url,
-            imageCloudinaryId: uploadImageResult.public_id,
-            imageCardCloudinaryId:uploadImageCardResult.public_id,
-            tags: tags
-          }
-        }, { new: true, omitUndefined: true });
-
-        if (imageToUpdate.imageCloudinaryId && imageToUpdate.imageCloudinaryId !== uploadImageResult.public_id) {
-          console.log("i am here"); 
-          await deleteImageFromCloudinary(imageToUpdate.imageCloudinaryId);
-          await deleteImageFromCloudinary(imageToUpdate.imageCardCloudinaryId);
-      }
-      }
-  
-      // Update the image document in MongoDB
-        updatedImage = await Image.findByIdAndUpdate(imageId, {
-        $set: {
-          name: name,
-          tags: tags
-        }
-      }, { new: true, omitUndefined: true });
-  
-      if (updatedImage) {
-        console.log('Image updated successfully');
-        return { success: true, message: 'Image updated successfully', data: updatedImage };
-      } else {
-        console.log('Image not found');
-        return { success: false, message: 'Image not found' };
-      }
     } catch (error) {
-      console.error('Error updating image:', error);
-      return { success: false, message: 'Error updating image', error: error.toString() };
+        console.error('Error updating image:', error);
+        return { success: false, message: 'Error updating image', error: error.toString() };
     }
-  }
+}
+
+
   
-  async function getImagesByTags(userTags = []) {
+  export async function getImagesByTags(userTags = []) {
     try {
         let tagValues = userTags;
 

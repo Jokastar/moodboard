@@ -1,7 +1,7 @@
 "use client"; 
 
 import React, {useEffect, useState} from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname} from 'next/navigation';
 import ImageForm from '@/app/components/ImageForm'
 import { getImageById } from '@/app/_actions/images';
 function EditImage() {

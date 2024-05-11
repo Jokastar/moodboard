@@ -13,7 +13,6 @@ const CollectionImages = () => {
     useEffect(() => {
         const fetchCollectionDetails = async () => {
             try {
-                console.log(collectionId)
                 const result = await getCollectionById(collectionId);
                 if (result.success) {
                     const collection = result.collection;
