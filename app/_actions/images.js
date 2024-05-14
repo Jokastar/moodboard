@@ -60,7 +60,7 @@ export async function addNewImage(prevState, formData) {
   const imageName = formData.get('name');
   const imageFile = formData.get('image');
   const tagsString = formData.get('tags');
-  console.log(formData); 
+  console.log("image:" + imageFile.type); 
   let success = false; 
 
   if (!imageName || !imageFile) {
@@ -162,7 +162,7 @@ export async function deleteImage(imageId) {
   }
 }
  export async function getAllImages(page) {
-    let limit = 5; 
+    let limit = 10; 
 
     try {
       const images = await Image.find()

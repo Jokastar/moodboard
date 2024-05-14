@@ -3,7 +3,6 @@
 import {useEffect, useState} from "react";  
 import Gallery from "./components/Gallery";
 import SearchBar from "./components/SearchBar/SearchBar";
-import MenuBar from "./components/MenuBar";
 import { getAllImages, getImagesByQuery } from "./_actions/images";
 import { useSession } from "next-auth/react";
 
@@ -42,7 +41,6 @@ import { useSession } from "next-auth/react";
     <>
       <SearchBar handleSubmit={handleSearchBarSubmit}/>
       <Gallery images={images}/>
-  
     </>
     
   );
