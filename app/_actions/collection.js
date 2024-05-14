@@ -5,11 +5,21 @@ import User from "../schema/mongo/User";
 import Image from "../schema/mongo/Image"
 import { convertObjectIdsToStrings } from "../lib/convertObjectIdsToStrings";
 
-export async function createCollection(userId, name) {
+export async function createCollection(prevState, formData) {
+
+  const name = formData.get("name")
+  const userId = formData.get("userId")
+  const description = formData.get("description"); 
+  const imageId = formData.get("imageId"); 
   
   try {
-      const newCollection = new Collection({ name, userId });
-      await newCollection.save();
+      const newCollection = new Collection({ name, userId, description });
+      const collection = await newCollection.save();
+
+      if(imageId){
+        await addImageToCollection(collection._id, imageId); 
+      }
+      
 
       const user = await User.findById(userId);
       if (!user) {
@@ -21,7 +31,7 @@ export async function createCollection(userId, name) {
       await user.save();
 
       console.log('Collection created successfully and added to user:', newCollection);
-      return { success: true, collection: newCollection };
+      return { success: true,  message:"collection created"};
   } catch (error) {
       console.error('Error creating collection:', error);
       return { success: false, error: error.message };
@@ -41,9 +51,9 @@ export async function addImageToCollection(collectionId, imageId) {
         return { success: false, message: 'Image not found' };
       }
 
-      if (collection.images.some(imgId => imgId.toString() === imageId)) {
+      if (collection.images.some(imgId => { imgId._id.toString() === imageId.toString()})){
         console.log('Image already in collection');
-        return { success: false, message: 'Image already in collection' };
+        return { success: false, message: 'Image already in collection'};
     }
   
       collection.images.push(image);

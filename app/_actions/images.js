@@ -60,6 +60,7 @@ export async function addNewImage(prevState, formData) {
   const imageName = formData.get('name');
   const imageFile = formData.get('image');
   const tagsString = formData.get('tags');
+  console.log(formData); 
   let success = false; 
 
   if (!imageName || !imageFile) {
@@ -180,7 +181,6 @@ export async function deleteImage(imageId) {
   }
 
   export async function getImageById(id) {
-    console.log("imageId" + id); 
     try {  
       const image = await Image.findOne({_id:id}).lean();
       if (!image) {
@@ -190,7 +190,7 @@ export async function deleteImage(imageId) {
       return image;
     } catch (error) {
       console.error('Error fetching image:', error);
-      throw error;  // Rethrow or handle as needed
+      return null
     }
   }
 

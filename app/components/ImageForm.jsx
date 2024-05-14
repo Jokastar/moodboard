@@ -54,11 +54,13 @@ function ImageForm({image}) {
         e.preventDefault();
 
         if (e.dataTransfer.files.length) {
+            fileInputRef.file = e.dataTransfer.files[0]; 
             processImage(e.dataTransfer.files[0]);
         }
     };
 
     const handleClick = (e) => {
+        e.preventDefault(); 
         e.stopPropagation();
         fileInputRef.current.click(); //simulate a click on the image input when user clicks anywhere in the drop zone
     };
@@ -68,8 +70,10 @@ function ImageForm({image}) {
     
     const handleAddTag = (e) =>{
         if(e.key === "Enter" && currentTagValue.trim()){
-            setTags(prevTags => [...prevTags, currentTagValue]); 
-            setCurrentTagValue("");  
+            if(tags.length < 6){
+                setTags(prevTags => [...prevTags, currentTagValue]); 
+                setCurrentTagValue("");
+            }  
         }
     } 
     const handleTagInputChange = (e) =>{
@@ -78,9 +82,10 @@ function ImageForm({image}) {
     
  
     return (
-        <form action={formAction} className='w-[700px]' onKeyPress={(e)=>{if(e.key === "Enter")e.preventDefault()}}>
-            <div 
-                className='dropZone w-full h-[400px] p-4 border border-slate-950 rounded-md flex items-center justify-center cursor-pointer relative' 
+        <div className="w-full flex items-start">
+        <form action={formAction} className='w-[40%]' onKeyPress={(e)=>{if(e.key === "Enter")e.preventDefault()}}>
+        <div 
+                className='dropZone w-full h-[250px] p-4 my-4 border border-white text-white rounded-md flex items-center justify-center flex-col relative gap-2' 
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
             >   
@@ -88,25 +93,30 @@ function ImageForm({image}) {
                     ref={fileInputRef}
                     onChange={handleImageChange}
                     type="file"
-                    className="absolute opacity-0 w-full h-full cursor-pointer" // Invisible but functional
+                    className="absolute opacity-0 cursor-pointer" // Invisible but functional
                     style={{ top: 0, left: 0}}
                     name='image'
                 />
-                {!imageUrl && !isLoading && !error && <p>Drop your image here or click to select</p>}
+                
+                {!imageUrl && !isLoading && !error && <p className='text-[0.85rem]'>Drop your image here or click to select</p>}
                 {imageUrl && !isLoading && !error && <img className='w-full h-full object-cover rounded-md' src={imageUrl} alt="image"/>}
                 {isLoading && !error && <p>Image loading...</p>}
                 {error && <p>{error}</p>}
-            </div>
-            <div className='imageName flex flex-col py-3'>
+        </div>
+        <div className="form-input text-white  flex flex-col gap-4">
+        {!isLoading && !error && <button onClick={handleClick} className='p-1 bg-slate-700 text-[0.85rem] rounded-md text-white w-[100px]'>choose file</button>}
+            <div className='imageName flex flex-col'>
                 <label htmlFor="name">Name</label>
                 <input
                 ref={imageName}
                 name="name"
                 required
-                className="border border-slate-950 rounded-md w-full p-2" type="text" id='name'/>
+                className="bg-[var(--background-color-dark)] border border-white rounded-md w-full p-2" type="text" id='name'/>
             </div>
-            <div className=' addTags border border-slate-950 rounded-md p-2 flex'>
-            <div className='flex'>
+            <div className="tags-input">
+            <label id="tags">Tags</label>
+            <div className='addTags flex items-center gap-2 p-2 bg-[var(--background-color-dark)] border border-white rounded-md w-full'>
+            <div className='flex gap-2'>
                 {tags.length > 0 && tags.map(tag =>(
                     <ImageTag onClick={handleDeleteTag} tag={tag} key={tag+Date.now()}/>
                 ))}
@@ -117,19 +127,23 @@ function ImageForm({image}) {
                 value={currentTagValue}
                 onChange={handleTagInputChange}
                 onKeyPress={handleAddTag}
-                className='focus:border-none w-full'
+                className='w-full rounded-md bg-[var(--background-color-dark)] border-none focus:outline-none focus:border-none'
             />
             <input
-            type="hidden"
             name="tags"
+            type="hidden"
             value={JSON.stringify(tags)} />
+
             {image && <input
             type="hidden"
             name="imageId"
             value={image._id}/>}
+            </div>
             </div> 
-            <button type='submit'>Submit</button>
+            <button type='submit' className="p-2 bg-[var(--background-color-dark)]  border border-white rounded-md">Submit</button>
+            </div>
         </form>
+        </div>
     );
 }
 

@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server';
 export async function middleware(req) {
     // Retrieve the token from the request using next-auth's getToken function
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    console.log(token); 
     // Check if the token exists and is valid
     if (!token) {
         // If no token, redirect to the login page

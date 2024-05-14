@@ -6,6 +6,9 @@ const collectionSchema = new mongoose.Schema({
     required: [true, 'Image name is required'],
     trim: true
   },
+  description:{
+    type:String,
+  },
   images: [
     {
       type: mongoose.Schema.Types.ObjectId,

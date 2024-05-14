@@ -66,8 +66,8 @@ function CollectionModal() {
 
     return (
         <>
-            <button className="btn" onClick={() => document.getElementById('my_modal_3').showModal()}>Add to collection</button>
-            <dialog id="my_modal_3" className="modal">
+            <button onClick={() => document.getElementById('my_modal_3').showModal()} className="bg-[#4f4f4f] hover:bg-[#383838] text-white rounded-lg">Add to collection</button>
+            <dialog id="my_modal_3" className="modal ">
                 <div className="modal-box">
                     <form method="dialog">
                         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>

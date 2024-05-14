@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import ImageCard from './ImageCard';
+import MenuBar from './MenuBar';
 
 function Gallery({ images }) {
   if(!images || images.lenght < 1 ) {
@@ -7,15 +8,11 @@ function Gallery({ images }) {
     )
   }
     return (
-      <div className="flex flex-wrap gap-4">
+      <div className=" grid grid-cols-3 gap-4 relative">
         {images.map((image) => (
-          <Link key={image._id} href={`/${image._id}`}>
-            <div className="w-48 cursor-pointer">
-              <img src={image.imageCardUrl} alt={image.name} className="w-full aspect-square rounded-lg shadow-lg object-cover"/>
-              <p className="mt-2 text-center text-sm font-semibold">{image.name}</p>
-            </div>
-          </Link>
+          <ImageCard image={image} key={image._id}/>
         ))}
+        <MenuBar/>
       </div>
     );
   }

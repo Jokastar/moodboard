@@ -8,22 +8,22 @@ function Header() {
     const { data: session, status } = useSession();
 
     return (
-        <div className='flex items-center justify-between p-4 bg-gray-800 text-white'>
-            <Link href="/" className='text-lg font-bold'>
-                Home
+        <div className='flex items-center justify-between text-white'>
+            <Link href="/" className='text-[1rem] hover:cursor-pointer'>
+                LOGO
             </Link>
             {status === "loading" ? (
                 <div>Loading...</div>
             ) : session ? (
-                <button
+                <div
                     onClick={() => signOut()}
-                    className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded'
+                    className= 'text-white text-[1rem] hover:cursor-pointer'
                 >
-                    Logout
-                </button>
+                    LOGOUT
+                </div>
             ) : (
-                <Link href="/login" className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
-                    Login
+                <Link href="/login" className='text-white text-[1rem] hover:cursor-pointer'>
+                    LOGIN
                 </Link>
             )}
         </div>

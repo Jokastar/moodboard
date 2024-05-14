@@ -12,7 +12,6 @@ import { useSession } from "next-auth/react";
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true); 
   const session = useSession(); 
-  console.log(session); 
   
   const handleSearchBarSubmit = async (input) =>{
     const requestedImages = await getImagesByQuery(input); 
@@ -43,7 +42,7 @@ import { useSession } from "next-auth/react";
     <>
       <SearchBar handleSubmit={handleSearchBarSubmit}/>
       <Gallery images={images}/>
-      <MenuBar/>
+  
     </>
     
   );
