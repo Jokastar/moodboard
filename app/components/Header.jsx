@@ -19,7 +19,7 @@ function Header() {
 
 const AuthButton = ({ session }) => {
     const path = usePathname(); 
-    
+
     if (path.includes("auth")) {
         return null; // Do not render anything if the path includes "auth"
     }
@@ -34,7 +34,7 @@ const AuthButton = ({ session }) => {
                     LOGOUT
                 </div>
             ) : (
-                <Link href="/login" className='text-white text-[1rem] hover:cursor-pointer'>
+                <Link href="/auth/login" className='text-white text-[1rem] hover:cursor-pointer'>
                     LOGIN
                 </Link>
             )}

@@ -4,13 +4,11 @@ import { useEffect, useState } from "react";
 import Gallery from "./components/Gallery";
 import SearchBar from "./components/SearchBar/SearchBar";
 import { getAllImages, getImagesByQuery, getImagesByTags } from "./_actions/images";
-import { useSession } from "next-auth/react";
 
 function Home() {
   const [images, setImages] = useState([]); 
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true); 
-  const session = useSession(); 
 
   const handleSearchBarSubmit = async (input) => {
     const requestedImages = await getImagesByQuery(input); 

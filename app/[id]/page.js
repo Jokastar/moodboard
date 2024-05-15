@@ -1,16 +1,16 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import {useRouter } from 'next/navigation';
 import DisplayImage from '../components/DisplayImage';
 import { getImageById } from '../_actions/images';
 
 function ImageInfo({params}) {
-    const [image, setImage] = useState(null);
-    const [error, setError] = useState(null);
+    const [image, setImage] = useState("");
+    const [error, setError] = useState("");
     const router = useRouter();
     const imageId = params.id
+    
    
-
     useEffect(() => {
         async function fetchImage() {
             try {

@@ -1,9 +1,12 @@
+"use client"; 
 import React from 'react';
 import ImageCard from './ImageCard';
 import MenuBar from './MenuBar';
+import { useSession } from 'next-auth/react';
 
 function Gallery({ images, onGenerateMoodboard }) {
-  if (!images || images.length < 1) {
+  const { data: session, status } = useSession();
+    if (!images || images.length < 1) {
     return (
       <div>No Images Found</div>
     );
@@ -13,7 +16,7 @@ function Gallery({ images, onGenerateMoodboard }) {
       {images.map((image) => (
         <ImageCard image={image} key={image._id} />
       ))}
-      <MenuBar onGenerateMoodboard={onGenerateMoodboard} />
+      {session && <MenuBar onGenerateMoodboard={onGenerateMoodboard} />}
     </div>
   );
 }

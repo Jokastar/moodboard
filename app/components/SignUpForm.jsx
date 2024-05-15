@@ -1,8 +1,7 @@
 "use client";
 import React from 'react';
 import {useFormState, useFormStatus} from "react-dom"; 
-import { signUp } from '../signup/_actions/signup';
-
+import { signUp } from '../auth/signup/_actions/signup';
 function SignUpForm() {
     const [state, formAction] = useFormState(signUp, {}); 
 

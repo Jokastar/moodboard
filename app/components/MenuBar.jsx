@@ -1,6 +1,6 @@
 "use client";
 import Link from 'next/link';
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 function MenuBar({onGenerateMoodboard}) {
   return (
@@ -21,41 +21,77 @@ function MoodBoard({ onGenerateMoodboard }) {
 
   const handleClick = async () => {
     await onGenerateMoodboard(tags ? [tags] : []);
+    setPage(0); // Close the dropdown after generating the moodboard
   };
 
-  const handleBlur = (e) => {
-    if (!dropdownRef.current.contains(e.relatedTarget)) {
+  const handleClickOutside = (e) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
       setPage(0);
       setTags("");
     }
   };
 
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleDropdownClick = () => {
+    if (page === 0) {
+      setPage(1); // Open the dropdown
+    }
+  };
+
   return (
-    <div className="relative" ref={dropdownRef} onBlur={handleBlur}>
-      <div tabIndex={0} role="button" className='uppercase text-[12px]' onFocus={() => setPage(0)}>generate moodboard</div>
-      <ul tabIndex={0} className="absolute bottom-full mb-2 dropdown-content z-[1] menu shadow bg-[var(--background-color-dark)] rounded-box w-52 text-white text-[12px] uppercase">
-        {page === 0 ? (
-          <>
-            <li className='cursor-pointer my-1 p-2 rounded-md bg-gray-900 hover:bg-gray-600' onClick={() => handleClick()}>random moodboard</li>
-            <li className='cursor-pointer my-1 p-2 rounded-md bg-gray-900 hover:bg-gray-600' onClick={() => setPage(1)}>add tags</li>
-          </>
-        ) : (
-          <>
-            <li className='my-1 p-2'>
-              <input
-                type="text"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder="Enter tags"
-                className="w-full p-1 rounded-md bg-gray-700 text-white placeholder-white focus:bg-gray-700 focus:text-white"
-              />
-            </li>
-            <li className='cursor-pointer my-1 p-2 rounded-md bg-gray-900 hover:bg-gray-600' onClick={() => handleClick()}>
-              generate moodboard
-            </li>
-          </>
-        )}
-      </ul>
+    <div className="relative" ref={dropdownRef}>
+      <div
+        tabIndex={0}
+        role="button"
+        className="uppercase text-[12px]"
+        onClick={handleDropdownClick}
+      >
+        generate moodboard
+      </div>
+      {page !== 0 && (
+        <ul className="absolute bottom-full mb-2 dropdown-content z-[1] menu shadow bg-[var(--background-color-dark)] rounded-box w-52 text-white text-[12px] uppercase">
+          {page === 1 ? (
+            <>
+              <li
+                className="cursor-pointer my-1 p-2 rounded-md bg-gray-900 hover:bg-gray-600"
+                onClick={handleClick}
+              >
+                random moodboard
+              </li>
+              <li
+                className="cursor-pointer my-1 p-2 rounded-md bg-gray-900 hover:bg-gray-600"
+                onClick={() => setPage(2)}
+              >
+                add tags
+              </li>
+            </>
+          ) : (
+            <>
+              <li className="my-1">
+                <input
+                  type="text"
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  placeholder="Enter tags"
+                  className="w-full p-1 rounded-md bg-gray-700 text-white placeholder-white focus:bg-gray-700 focus:text-white"
+                />
+              </li>
+              <li
+                className="cursor-pointer my-1 p-2 rounded-md bg-gray-900 hover:bg-gray-600"
+                onClick={handleClick}
+              >
+                generate moodboard
+              </li>
+            </>
+          )}
+        </ul>
+      )}
     </div>
   );
 }
