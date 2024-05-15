@@ -113,14 +113,7 @@ export async function addNewImage(prevState, formData) {
     // Save the new image document
     await newImage.save(); 
 
-    if(tags.lenght > 0){
-      for(let tag of tags){
-        const tag = new Tags({
-          tag:tag
-        })
-        await tag.save()
-      }
-    }
+    await addTags(tags); 
     
 
     success = true; 
@@ -392,5 +385,24 @@ async function changeImageFormat(imageBuffer){
   }
   
 
+}
+
+ async function addTags(tags) {
+  try {
+      if (tags.length > 0) {
+          // Create an array of tag objects
+          const tagObjects = tags.map(tagValue => ({ tag: tagValue }));
+          
+          // Insert tags in batch, avoiding duplicates
+          await Tag.insertMany(tagObjects, { ordered: false, bypassDocumentValidation: true });
+      }
+  } catch (error) {
+      if (error.code === 11000) {
+          console.log('Duplicate tags detected and skipped.');
+      } else {
+          console.error('Error adding tags:', error);
+          throw error;
+      }
+  }
 }
 
