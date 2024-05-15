@@ -56,6 +56,7 @@ const CollectionImages = ({params}) => {
             const result = await removeImageFromCollection(collectionId, imageId);
             if (result.success) {
                 console.log('Image removed from collection successfully');
+                setImages(prevImages => prevImages.filter(image => image._id !== imageId));
                 // Optionally update the state or UI to reflect the removal
             } else {
                 console.error('Failed to remove image from collection:', result.message);

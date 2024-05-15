@@ -1,21 +1,20 @@
-"use client"; 
+
+"use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { signIn } from "next-auth/react"; 
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 
 function LoginForm() {
     const router = useRouter(); 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null); 
-    
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        try{
-
+        try {
             const result = await signIn('credentials', {
                 redirect: false, // Prevent NextAuth from redirecting automatically
                 email,
@@ -23,63 +22,66 @@ function LoginForm() {
             });
 
             if (result?.error) {
-                console.log(result.error)
-                setError("Password or email incorrect")
+                console.log(result.error);
+                setError("Password or email incorrect");
             } else {
                 console.log('Logged in successfully!');
                 // Redirect to another page or update the UI
-                console.log(result); 
-                router.push("/")
+                router.push("/");
             }
-
-        }catch(e){
-            console.log(e)
-            setError(" unexpected error occured"); 
-            return 
+        } catch (e) {
+            console.log(e);
+            setError("Unexpected error occurred");
         }
-    
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="p-8 bg-white shadow-lg rounded-lg">
-                <form className="flex flex-col space-y-4" onSubmit={handleSubmit}>
+        <div className='grid grid-cols-2 min-h-[80vh]'>
+            <div className='white-space w-full'></div>
+            <form className="grid grid-rows-[20%_80%] w-full h-full"  onSubmit={handleSubmit}>
+                <div className='whitspace'></div>
+                <div className='form-ctn w-full h-full flex flex-col justify-between '>
+                    <div className='inputs'>
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
                         <input
                             type="email"
                             id="email"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            className="mb-[4rem] w-full text-white text-[1.5rem] focus:outline-none bg-[var(--background-color-dark)] border-b-2 border-b-white placeholder:uppercase placeholder:text-white"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            placeholder='email'
                         />
                     </div>
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
                         <input
                             type="password"
                             id="password"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            className="w-full text-white text-[1.5rem] focus:outline-none bg-[var(--background-color-dark)] border-b-2 border-b-white placeholder:uppercase placeholder:text-white"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
+                            placeholder='password'
                         />
+                        <p className="text-sm text-white">
+                        Do not have an account?&nbsp;
+                        <Link href="/auth/signup" className="text-indigo-600 hover:text-indigo-700">Sign up</Link>
+                    </p>
                     </div>
-                    {error && <p className='bg-red-600 text-white text-[8px] p-1 rounded-md'>{error}</p>}
+                    {error && <p className='bg-red-600 text-white text-xs p-2 rounded-md'>{error}</p>}
+                    </div>
+                    <div className='submit-ctn'>
                     <button
                         type="submit"
-                        className="py-2 px-4 bg-blue-500 text-white font-bold rounded hover:bg-blue-700"
+                        className="w-full py-2 px-4 text-black bg-white rounded-lg"
                     >
                         Log In
                     </button>
-                    <p className="text-center text-sm text-gray-600">
-                        Do not have an account?{' '}
-                        <Link href="/signup" className="text-blue-500 hover:text-blue-600">Sign up</Link>
-                    </p>
+                    
+                    </div>
+                </div>   
                 </form>
             </div>
-        </div>
     );
 }
 
