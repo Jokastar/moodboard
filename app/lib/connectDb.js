@@ -20,10 +20,10 @@ async function connectDB() {
 
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false,  // This option disables mongoose buffering, requiring a connection to send operations to the server.
+      bufferCommands: true,  // This option disables mongoose buffering, requiring a connection to send operations to the server.
     };
 
-    cached.promise = mongoose.connect(DATABASE_URL, opts).then((mongoose) => {
+    cached.promise = await mongoose.connect(DATABASE_URL, opts).then((mongoose) => {
       console.log("Database connected successfully"); // Log on successful connection
       return mongoose;
     }).catch(err => {

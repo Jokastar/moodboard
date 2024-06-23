@@ -4,7 +4,6 @@ import User from "@/app/schema/mongo/User";
 import bcrypt from "bcrypt"; 
 import { redirect } from "next/navigation";
 
-
 export async function signUp(prevState, formData) {
     console.log(formData); 
 

@@ -12,56 +12,64 @@ import sharp from "sharp";
 import { Buffer } from 'buffer';
 import { redirect } from "next/navigation";
 
-//const openai = new OpenAI({apiKey:process.env.OPENAI_KEY});
+
+const openai = new OpenAI({apiKey:process.env.OPENAI_KEY});
 
 (async () => {
   await connectDB();
 })();
 
-export async function getImageTags(imageUrl, title){
- const system_prompt = "You are an agent specialized in tagging images related to fashion, architecture, landscape, design, and video games. Each image will showcase distinctive features that may pertain to style trends, architectural forms, natural scenery, artistic design elements, or digital environments from video games. You will be provided with an image along with a brief description or title of the scene, item, or theme depicted in the image. Your goal is to extract relevant keywords that could be used to categorize and search for these images in a creative database or digital gallery. Keywords should be precise, in lower case, and capture the essence of the image in terms of: Subject Matter (e.g., 'evening gown', 'skyscraper', 'waterfall', 'graphic poster', 'fantasy RPG') Design Style (e.g., 'minimalist', 'art deco', 'surrealist', 'baroque', 'pixel art') Dominant Colors (e.g., 'mint green', 'charcoal gray', 'pastel pink', 'neon blue') Material or Fabric (for fashion and design items, e.g., 'silk', 'leather', 'canvas') Texture and Patterns (for video game imagery, e.g., 'gritty texture', 'smooth shading', '8-bit') Emotional or Thematic Tone (e.g., 'serene', 'dynamic', 'melancholic', 'epic', 'mysterious') Only select material, style, or color keywords if they are prominently featured and contribute significantly to the character or appeal of the image. Return the keywords in the format of an array of strings, like this:['fantasy RPG', 'epic', 'neon blue', 'pixel art']  Ensure your tags not only describe the image accurately but also resonate with artistic and aesthetic nuances that could appeal to designers, artists, gamers, and creatives seeking inspiration or specific imagery for their projects."
 
- try{
-  const response = await openai.chat.completions.create(
-    {model:"gpt-4-vision-preview",
-    messages:[
-        {
-            "role": "system",
-            "content": system_prompt
-        },
-        {
-            "role": "user",
-            "content": [
+export async function getImageTagsfromChatGPT(base64ImageUrl) {
+    const system_prompt = "You are an agent specialized in tagging images related to fashion, architecture, landscape, design, video games, paintings and photography. Each image will showcase distinctive features that may pertain to style trends, architectural forms, natural scenery, artistic design elements, or digital environments from video games. You will be provided with an image along with a brief description or title of the scene, item, or theme depicted in the image. Your goal is to extract relevant keywords that could be used to categorize and search for these images in a creative database or digital gallery. Keywords should be precise, in lower case, and capture the essence of the image in terms of: Subject Matter (e.g., 'evening gown', 'skyscraper', 'waterfall', 'graphic poster', 'fantasy RPG') Design Style (e.g., 'minimalist', 'art deco', 'surrealist', 'baroque', 'pixel art') Dominant Colors (e.g., 'mint green', 'charcoal gray', 'pastel pink', 'neon blue') Material or Fabric (for fashion and design items, e.g., 'silk', 'leather', 'canvas') Texture and Patterns (for video game imagery, e.g., 'gritty texture', 'smooth shading', '8-bit') Emotional or Thematic Tone (e.g., 'serene', 'dynamic', 'melancholic', 'epic', 'mysterious') Only select material, style, or color keywords if they are prominently featured and contribute significantly to the character or appeal of the image. Return the keywords in the format of an array of strings, like this:['fantasy RPG', 'epic', 'neon blue', 'pixel art']  Ensure your tags not only describe the image accurately but also resonate with artistic and aesthetic nuances that could appeal to designers, artists, gamers, and creatives seeking inspiration or specific imagery for their projects. return 4 tags maximum";
+
+    try {
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
                 {
-                    "type": "image_url",
-                    "image_url": imageUrl,
+                    role: "user",
+                    content: [
+                        { type: "text", text: system_prompt },
+                        {
+                            type: "image_url",
+                            image_url: {
+                                "url": base64ImageUrl
+                            },
+                        },
+                    ],
                 },
             ],
-        },
-        {
-            "role": "user",
-            "content": title
-        }
-    ],
-        max_tokens:300,
-        top_p:0.1
-   } )
-    console.log(response.choices[0].message.content); 
-    return response.choices[0].message.content
+        });
+        
+        // Remove leading and trailing whitespace
+        let tagsStringArray = response.choices[0].message.content.trim();
 
- }catch(error){
-  console.log(error); 
-  return error; 
- }
- 
+    // Remove surrounding square brackets if present
+    if (tagsStringArray.startsWith('[') && tagsStringArray.endsWith(']')) {
+        tagsStringArray = tagsStringArray.substring(1, tagsStringArray.length - 1);
+    }
+
+    // Split the string by commas, taking into account potential spaces
+    let tagsArray = tagsStringArray.split(/\s*,\s*/);
+
+    // Trim each item to remove any remaining whitespace and quotes
+    tagsArray = tagsArray.map(tag => tag.replace(/'/g, '').trim());
+    
+    return tagsArray;
+
+
+    } catch (e) {
+        console.log(e);
+    }
 }
 
 export async function addNewImage(prevState, formData) {
   const imageName = formData.get('name');
   const imageFile = formData.get('image');
   const tagsString = formData.get('tags');
-  console.log("image:" + imageFile.type); 
-  let success = false; 
+  console.log("image:" + imageFile.type);
+  let success = false;
 
   if (!imageName || !imageFile) {
       console.error('Missing required fields');
@@ -70,61 +78,75 @@ export async function addNewImage(prevState, formData) {
 
   // Validate the form data using your Zod schema
   const result = ImageSchema.safeParse({
-    imageName: imageName,
-    imageFile:imageFile
+      imageName: imageName,
+      imageFile: imageFile
   });
 
   if (!result.success) {
-    console.error('Validation errors:', result.error.flatten().fieldErrors);
-    return { success: false, message: 'Validation errors', errors: result.error.flatten().fieldErrors };
+      console.error('Validation errors:', result.error.flatten().fieldErrors);
+      return { success: false, message: 'Validation errors', errors: result.error.flatten().fieldErrors };
   }
 
+  
   try {
-    // Parse the tags from string to JSON
-    let tags = JSON.parse(tagsString || "[]");
+      // Parse the tags from string to JSON
+      const tags = JSON.parse(tagsString || "[]");
+      
+      // Get buffer from imageFile
+      const imageFileToBuffer = Buffer.from(await imageFile.arrayBuffer());
 
-    // Get buffer from imageFile
-    const imageFileToBuffer = Buffer.from(await imageFile.arrayBuffer());
+      // Change image format and size
+      const { imageBuffer, imageCardBuffer, error } = await changeImageFormat(imageFileToBuffer);
 
-    //Change image format and size; 
-    const {imageBuffer, imageCardBuffer, error} = await changeImageFormat(imageFileToBuffer); 
+      if (error) {
+          console.log("failed changing image format " + error);
+          return;
+      }
 
-    if(error){
-      console.log("failed changing image format " + error);
-      return;  
-    }
+      // Upload the image file to Cloudinary
+      const uploadImageResult = await uploadImageToCloudinary(imageBuffer, imageName);
+      const uploadImageCardResult = await uploadImageToCloudinary(imageCardBuffer, imageName);
 
-    // Upload the image file to Cloudinary
-    const uploadImageResult = await uploadImageToCloudinary(imageBuffer, imageName);
-    const uploadImageCardResult = await uploadImageToCloudinary(imageCardBuffer, imageName)
-    console.log('Upload successful:', uploadImageResult);
-    console.log('Upload successful:', uploadImageCardResult);
+      console.log('Upload successful:', uploadImageResult);
+      console.log('Upload successful:', uploadImageCardResult);
 
-    //upload image to MongoDB
-    const newImage = new Image({
-      name: imageName,
-      imageUrl: uploadImageResult.url, // Use the URL from Cloudinary upload result
-      imageCardUrl:uploadImageCardResult.url,
-      imageCloudinaryId: uploadImageResult.public_id,
-      imageCardCloudinaryId:uploadImageCardResult.public_id,
-      tags: tags
-    });
+      // Get embedding for image name
+      const imageNameEmbedding = await getEmbedding(imageName);
 
-    // Save the new image document
-    await newImage.save(); 
+      // Upload image to MongoDB
+      const newImage = new Image({
+          name: imageName,
+          nameEmbedding: imageNameEmbedding,
+          imageUrl: uploadImageResult.url, // Use the URL from Cloudinary upload result
+          imageCardUrl: uploadImageCardResult.url,
+          imageCloudinaryId: uploadImageResult.public_id,
+          imageCardCloudinaryId: uploadImageCardResult.public_id,
+          tags: tags // Store tags as an array of strings
+      });
 
-    await addTags(tags); 
-    
+      // Save the new image document
+      await newImage.save();
+      console.log(tags); 
+      // Insert tags into MongoDB, avoiding duplicate entries
+      for (const tag of tags) {
+          const tagEmbedding = await getEmbedding(tag);
+          await Tag.updateOne(
+              { tag: tag },
+              { $setOnInsert: { tag: tag, tagEmbedding: tagEmbedding } },
+              { upsert: true }
+          );
+      }
 
-    success = true; 
+      success = true;
   } catch (error) {
-    console.log('Failed to upload or save image:', error);
-    return { success: false, message: 'Failed to upload or save image', error: error.toString()};
+      console.log('Failed to upload or save image:', error);
+      return { success: false, message: 'Failed to upload or save image', error: error.toString() };
   }
 
-  if(success) redirect("/")
-
+  if (success) redirect("/"); 
 }
+
+
 
 export async function deleteImage(imageId) {
   try {
@@ -217,7 +239,6 @@ export async function deleteImage(imageId) {
       return images;
     } catch (error) {
       console.error('Error fetching image:', error);
-      throw error;  // Rethrow or handle as needed
       return []
     }
   }
@@ -307,9 +328,7 @@ export async function deleteImage(imageId) {
         return { success: false, message: 'Error updating image', error: error.toString() };
     }
 }
-
-
-  
+ 
   export async function getImagesByTags(userTags = []) {
     try {
         let tagValues = userTags;
@@ -366,43 +385,96 @@ export async function deleteImageFromCloudinary(publicId) {
     });
   }
 
-async function changeImageFormat(imageBuffer){
+  async function changeImageFormat(imageBuffer) {
+    try {
+      // Resize while preserving aspect ratio for the main image
+      const newImageBuffer = await sharp(imageBuffer)
+        .resize({ width: 1024 }) // Specify width, height will be calculated to maintain aspect ratio
+        .toFormat('webp') // Convert to webp
+        .toBuffer();
+  
+      // Resize while preserving aspect ratio for the image card
+      const imageCardBuffer = await sharp(imageBuffer)
+        .resize({ width: 600 }) // Specify width, height will be calculated to maintain aspect ratio
+        .toFormat('webp')
+        .toBuffer();
+  
+      return { imageBuffer: newImageBuffer, imageCardBuffer: imageCardBuffer, error: false };
+    } catch (e) {
+      return { error: e };
+    }
+  }
+
+
+ async function getEmbedding(text){
   try{
-    const newImageBuffer = await sharp(imageBuffer)
-    .resize(1024, 768) // Optional: Resize if needed
-    .toFormat('webp') // Convert to webp
-    .toBuffer();
+    const embedding = await openai.embeddings.create({
+      model: "text-embedding-3-small",
+      input: text,
+      encoding_format: "float",
+    });
 
-    const imageCardBuffer = await sharp(imageBuffer)
-    .resize(600, 600)
-    .toFormat('webp')
-    .toBuffer()
-
-    return{imageBuffer:newImageBuffer, imageCardBuffer:imageCardBuffer, error:false};
+    return embedding.data[0].embedding; 
 
   }catch(e){
-    return{error:e}
+    console.log("embedding error", e); 
   }
   
-
 }
 
- async function addTags(tags) {
-  try {
-      if (tags.length > 0) {
-          // Create an array of tag objects
-          const tagObjects = tags.map(tagValue => ({ tag: tagValue }));
-          
-          // Insert tags in batch, avoiding duplicates
-          await Tag.insertMany(tagObjects, { ordered: false, bypassDocumentValidation: true });
-      }
-  } catch (error) {
-      if (error.code === 11000) {
-          console.log('Duplicate tags detected and skipped.');
-      } else {
-          console.error('Error adding tags:', error);
-          throw error;
-      }
+export async function getSimilarTags(tag){
+    try{
+      const tagsEmbedding = await getEmbedding(tag); 
+      const agg = [
+        {
+          '$vectorSearch': {
+            'index': 'tags_embedding_index',
+            'path': 'tagEmbedding',
+            'queryVector': tagsEmbedding, // Adjust the query vector as needed
+            'numCandidates': 6,
+            'limit': 6
+          }
+        },
+        {
+          '$project': {
+            '_id': 0,
+            'tag': 1,
+            'similarity': { $meta: 'searchScore' } // Include the similarity score in the projection
+          }
+        },
+        {
+          '$sort': {
+            'similarity': -1 // Sort by similarity score in descending order
+          }
+        }
+      ];
+
+      const similarTags = await Tag.aggregate(agg);
+      return similarTags;
+
+    }catch(e){
+      console.log(e);
+      return [];
+    }  
   }
-}
+
+  export async function getImagesSuggestions(input){
+    try{
+      const agg = [
+        {$search: {index: "image_name_autocomplete_index", autocomplete: {query: input, path: "name"}}},
+        {$limit: 10},
+        {$project: {_id: 0,name: 1}}
+    ];
+
+      const images = await Image.aggregate(agg);
+      return images;
+
+    }catch(e){
+      console.log(e);
+      return [];
+    } 
+  }
+
+
+
 

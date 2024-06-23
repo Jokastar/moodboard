@@ -1,9 +1,9 @@
-"use client"; 
-import React, {useState} from 'react';
+"use client";
+import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { getImageById} from '@/app/_actions/images';
-import {addImageToCollection, createCollection} from "../../_actions/collection" 
-import {useFormState, useFormStatus} from "react-dom"; 
+import { getImageById } from '@/app/_actions/images';
+import { addImageToCollection, createCollection } from "../../_actions/collection";
+import { useFormState } from "react-dom";
 import useCollections from '@/app/hooks/useCollections';
 
 function AddToCollection({ params }) {
@@ -13,13 +13,9 @@ function AddToCollection({ params }) {
 
     const [image, setImage] = useState(null);
     const [loadingImage, setLoadingImage] = useState(false);
-    const [collectionForm, setCollectionForm] = useState(0); 
+    const [collectionFormPage, setCollectionFormPage] = useState(0);
 
-    const handleCreateCollection = () =>{
-
-    }
-
-    React.useEffect(() => {
+    useEffect(() => {
         const fetchImage = async () => {
             setLoadingImage(true);
             const imageData = await getImageById(imageId);
@@ -35,57 +31,75 @@ function AddToCollection({ params }) {
 
     return (
         <div className='flex flex-col gap-4'>
-        <div className='grid grid-cols-2 gap-4 h-[80vh]'>
-            <div className='image-container w-full h-full rounded-lg flex items-center justify-center border border-white'>
-                <img src={image?.imageUrl} alt={image?.name} className="cover"/>
+            <div className='grid grid-cols-2 h-[80vh]'>
+                <div className='image-container w-full h-full rounded-sm flex items-center justify-center bg-black'>
+                    <img src={image?.imageUrl} alt={image?.name} className="object-cover" />
+                </div>
+                <div className='form-container w-full h-full rounded-sm p-5 bg-[var(--light-gray)] relative font-favorit-light-c'>
+                    <h2 className='uppercase text-[1.25rem] font-favorit-c'>{collectionFormPage === 0 ? "Add to collection" : "Create collection"}</h2>
+                    {collectionFormPage === 0 ? (
+                        collections.length > 0 ? (
+                            <>
+                                {collections.map(collection => (
+                                    <CollectionRow collection={collection} imageId={imageId} key={collection._id} />
+                                ))}
+                                <button
+                                    className='uppercase px-4 py-2 bg-black text-white w-[92%] rounded-lg absolute bottom-[20px]'
+                                    onClick={() => setCollectionFormPage(1)}
+                                >
+                                    Create collection
+                                </button>
+                            </>
+                        ) : (
+                            <div className='flex flex-col items-center justify-center h-full'>
+                                <p className='text-center'>No collections created</p>
+                                <button
+                                    className='uppercase px-6 py-4 bg-black text-white mt-4 rounded-sm text-xs'
+                                    onClick={() => setCollectionFormPage(1)}
+                                >
+                                    Create collection
+                                </button>
+                            </div>
+                        )
+                    ) : (
+                        <CreateCollectionForm handleCollectionFormPage={setCollectionFormPage} userId={session.user.id} imageId={imageId} />
+                    )}
+                </div>
             </div>
-            <div className='form-container w-full h-full rounded-lg p-5 border border-white bg-slate-300 relative'>
-                <h2 className='uppercase text-[1.25rem]'>{collectionForm == 0 ? "Add to collection" : "create collection"}</h2>
-                {collectionForm == 0 ? collections.map(collection => (
-                    <>
-                    <CollectionRow collection={collection} imageId={imageId} key={collection._id} />
-                    
-                    <button className='uppercase px-4 py-2 bg-black text-white w-[92%] rounded-lg absolute bottom-[20px]' onClick={()=>setCollectionForm(1)}>create collection</button>
-                    </>
-                )) : <CreateCollectionForm handleCollectionForm={setCollectionForm} userId={session.user.id} imageId={imageId}/>
-            }
-            </div>
-        </div>
         </div>
     );
 }
-
 
 function CollectionRow({ collection, imageId }) {
     const [error, setError] = useState(false);
     const [saved, setSaved] = useState(false);
 
     const handleClick = async () => {
-        setError(false); // Reset error state before attempting the action
+        setError(false);
         try {
             const { success } = await addImageToCollection(collection._id, imageId);
             if (success) {
-                setSaved(true); // Update the saved state if the operation was successful
+                setSaved(true);
             } else {
-                setError(true); // Set error state if the operation was not successful
+                setError(true);
             }
         } catch (e) {
-            setError(true); // Set error state if there was an exception
+            setError(true);
         }
     };
 
     return (
         <div className='flex justify-between items-center p-4 border-b border-black'>
             <div className='collectionInfos flex items-center gap-4'>
-                <div className='noOfPhotos rounded-[50%] bg-black text-white w-[24px] h-[24px]'>
-                    {""}
+                <div className='noOfPhotos rounded-[50%] bg-black text-white w-[20px] h-[20px] flex items-center justify-center text-[10px]'>
+                    <span>{collection.images.length}</span>
                 </div>
                 <p>{collection.name}</p>
             </div>
             <button
                 className={`px-4 py-2 rounded-lg text-white ${saved ? 'bg-green-500' : 'bg-black'}`}
                 onClick={handleClick}
-                disabled={saved} // Disable the button if the image is already saved
+                disabled={saved}
             >
                 {saved ? 'Saved' : 'Save'}
             </button>
@@ -94,59 +108,62 @@ function CollectionRow({ collection, imageId }) {
     );
 }
 
-function CreateCollectionForm({handleCollectionForm, userId, imageId}){
-    const [state, formAction] = useFormState(createCollection, {}); 
+function CreateCollectionForm({ handleCollectionFormPage, userId, imageId }) {
+    const [state, formAction] = useFormState(createCollection, {});
 
-    if(state.success){
-        handleCollectionForm(0); 
-    }
-    return(
-        <form action={formAction}>
-                <div className="mb-4">
-                    <label className="block text-gray-700 mb-2" htmlFor="name">
-                        Name
-                    </label>
-                    <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        required
-                    />
-                </div>
-                <div className="mb-4">
-                    <label className="block text-gray-700 mb-2" htmlFor="description">
-                        Description
-                    </label>
-                    <textarea
-                        id="description"
-                        name='description'
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        required
-                    />
-                </div>
-                <input name="userId" value={userId} id="userId" type="hidden"/>
-                <input name="imageId" value={imageId} id="imageId" type="hidden"/>
-                <div className="flex items-center justify-between">
-                    
-                    <button
-                        type="button"
-                        onClick={()=> handleCollectionForm(0)}
-                        className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    >
-                        Back
-                    </button>
-                    <button
-                        type="submit"
-                        className="bg-black text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    >
-                        Create
-                    </button>
-                </div>
-            </form>
-    )
+    useEffect(() => {
+        if (state.success) {
+            handleCollectionFormPage(0);
+        }
+    }, [state.success, handleCollectionFormPage]);
+
+    return (
+        <form action={formAction} className="flex flex-col justify-evenly">
+    <div className="mb-4">
+        <label className="block text-black mb-2 bg-transparent" htmlFor="name">
+            Name
+        </label>
+        <input
+            id="name"
+            name="name"
+            type="text"
+            className="border-b border-b-[var(--black)] bg-transparent w-full py-2 text-black leading-tight focus:outline-none focus:shadow-outline"
+            required
+        />
+    </div>
+    <div className="mb-4">
+        <label className="block text-black mb-2 bg-transparent" htmlFor="description">
+            Description
+        </label>
+        <textarea
+            id="description"
+            name='description'
+            className="border-b border-b-[var(--black)] w-full py-2 bg-transparent text-black leading-tight focus:outline-none focus:shadow-outline"
+            required
+        />
+    </div>
+    <input name="userId" value={userId} id="userId" type="hidden" />
+    <input name="imageId" value={imageId} id="imageId" type="hidden" />
+    <div className="flex items-center justify-between">
+        <button
+            type="button"
+            onClick={() => handleCollectionFormPage(0)}
+            className="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-sm focus:outline-none focus:shadow-outline"
+        >
+            Back
+        </button>
+        <button
+            type="submit"
+            className="bg-black text-white py-2 px-4 rounded-sm w-[120px] focus:outline-none focus:shadow-outline"
+        >
+            Create
+        </button>
+    </div>
+</form>
+
+    );
 }
 
-
 export default AddToCollection;
+
 

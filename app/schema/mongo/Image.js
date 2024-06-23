@@ -6,6 +6,9 @@ const imageSchema = new mongoose.Schema({
       required: [true, 'Image name is required'],
       trim: true
     },
+    nameEmbedding:{
+      type:[Number]
+    },
     imageUrl: {
       type: String,
       required: [true, 'Image URL is required']

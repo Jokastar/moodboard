@@ -40,7 +40,7 @@ function ImageInfo({params}) {
     return (
         <div>
             <button onClick={() => router.back()}>Go Back</button> {/* Go Back button */}
-            <DisplayImage image={image} imageId={imageId} />
+            <DisplayImage image={image} imageId={imageId} isEditMode={false} />
         </div>
     );
 }

@@ -38,14 +38,14 @@ function SearchBar({ handleSubmit }) {
     return (
         <div>
             <input
-                className='w-full h-6 py-2 px-1 bg-[var(--background-color-dark)] text-white placeholder:text-white border-b-2 border-white focus:outline-none ring-0'
+                className='w-full h-6 text-lg text-black border-b-2 bg-transparent font-favorit-light-c italic placeholder:text-black border-black  focus:outline-none ring-0'
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="SEARCH"
+                placeholder="Search"
             />
             {suggestions.length > 0 && (
-                <ul className="absolute z-10 list-disc bg-white border border-gray-300 rounded shadow-lg mt-1">
+                <ul className="absolute z-10 list-disc bg-white border rounded-sm mt-1 max-w-[400px]">
                     {suggestions.map((suggestion, index) => (
                         <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                             onClick={() => handleSuggestionClick(suggestion)}>

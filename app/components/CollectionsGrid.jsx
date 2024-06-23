@@ -46,17 +46,17 @@ const CollectionsGrid = () => {
         <>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
             {collections.length === 0 ? (
-                <p className="text-center text-gray-500">No collections available.</p>
+                <p className="text-cent">No collections available.</p>
             ) : (
                 collections.map((collection) => (
                     <div
                         key={collection._id}
-                        className="relative bg-cover bg-center h-48 rounded-lg cursor-pointer transform transition-transform duration-200 hover:scale-105"
+                        className="relative bg-cover bg-center h-[200px] rounded-sm cursor-pointer transform transition-transform duration-200 hover:scale-105"
                         style={{ backgroundImage: `url(${collection.imageUrl})` }}
                         onClick={() => handleCollectionClick(collection._id)}
                     >
-                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-                            <p className="text-white text-lg font-semibold text-center px-2">{collection.name}</p>
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-sm">
+                            <p className="text-md  text-white text-center px-2">{collection.name}</p>
                         </div>
                     </div>
                 ))

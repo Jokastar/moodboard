@@ -10,9 +10,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <AuthContext>
-      <html lang="fr">
+      <html lang="fr" className="bg-[var(--background-color-dark)]">
         <body>
-          <Header /> {/* Add the Header component here */}
+          <Header /> 
           {children}
         </body>
       </html>

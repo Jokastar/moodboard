@@ -8,12 +8,14 @@ import { usePathname } from 'next/navigation';
 function Header() {
     const { data: session, status } = useSession();
     return (
-        <div className='flex items-center justify-between text-white'>
-            <Link href="/" className='text-[1rem] hover:cursor-pointer uppercase'>
-                HOME
+        <>
+        <div className='flex items-center justify-between font-favorit-c'>
+            <Link href="/" className= 'home-btn hover:cursor-pointer font-reckless-neue-book text-[28px] uppercase'>
+                MOODBOARD
             </Link>
             <AuthButton session={session} />
         </div>
+         </>
     );
 }
 
@@ -29,12 +31,12 @@ const AuthButton = ({ session }) => {
             {session ? (
                 <div
                     onClick={() => signOut()}
-                    className='text-white text-[1rem] hover:cursor-pointer'
+                    className='text-xs hover:cursor-pointer'
                 >
                     LOGOUT
                 </div>
             ) : (
-                <Link href="/auth/login" className='text-white text-[1rem] hover:cursor-pointer'>
+                <Link href="/auth/login" className='text-xs hover:cursor-pointer'>
                     LOGIN
                 </Link>
             )}

@@ -2,30 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background-color-dark: rgb(40, 40, 40)
+@font-face {
+  font-family: "FavoritC";
+  src: url("../public/fonts/FavoritC.woff2") format("woff2");
+}
+@font-face {
+  font-family: "FavoritLightC";
+  src: url("../public/fonts/FavoritLightC.woff2") format("woff2");
+  font-style: normal;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+@font-face {
+  font-family: "FavoritLightC";
+  src: url("../public/fonts/FavoritLightC-Italic.woff2") format("woff2");
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "RecklessNeue";
+  src: url("../public/fonts/RecklessNeue-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "RecklessNeueBook";
+  src: url("../public/fonts/RecklessNeue-Book.woff2") format("woff2");
+}
+:root {
+
+  --black: #222224;
+  --light-black:#3A3A3A;  
+  --light-gray: #DBDBCC;
+  --dark-gray: #CFCCC3; 
+  --yellow: #F5F500;
+  --red:#A81818;
+  --green:#32C286; 
 }
 
 html{
-  min-height:100vh; 
+  min-height:100vh;
+  background-image: url("../public/images/website_background.svg"); 
+  color: black; 
+  font-family: "FavoritC";
 }
 
-html, body{
-  background-color: var(--background-color-dark);
-}
 body{
-  padding-left: 4rem;
-  padding-right: 4rem;
-  padding-top: 2rem;
+  padding: 2rem 4rem;
   min-height: 100vh;
+  overflow-y:scroll; 
+  
 }
 
 @layer utilities {

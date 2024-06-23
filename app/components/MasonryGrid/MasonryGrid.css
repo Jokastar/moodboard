@@ -1,0 +1,37 @@
+.masonry-grid {
+  display: block;
+  position: relative;
+  width: 100%;
+  --default-gap: 10px;
+}
+
+.masonry-grid > * {
+  position: absolute;
+  display: block;
+  transition: top 0.3s, left 0.3s;
+  --col-width: calc(
+    100% / var(--cols) - var(--gap, var(--default-gap)) * (var(--cols) - 1) /
+      var(--cols)
+  );
+  width: var(--col-width);
+  left: calc(
+    var(--col-width) * var(--col-i) + var(--gap, var(--default-gap)) *
+      var(--col-i)
+  );
+}
+
+
+.masonry-grid img {
+  background: rgb(35, 35, 35);
+  transition: transform 0.2s ease-in;
+}
+
+.masonry-item {
+  margin-bottom: var(--default-gap);
+}
+
+.masonry-item img:hover {
+  transform: scale(1.02);
+}
+
+

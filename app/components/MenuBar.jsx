@@ -4,10 +4,10 @@ import React, { useState, useEffect, useRef } from 'react';
 
 function MenuBar({onGenerateMoodboard}) {
   return (
-    <div className='flex justify-center items-center w-full absolute'>
-      <div className='flex justify-evenly items-center rounded-[24px] bg-black text-white w-[600px] text-[14px] px-2 py-3 fixed bottom-[70px]'>
-        <Link href="/collections" className='uppercase text-[12px]'>View your collections</Link>
-        <Link href="/newimage" className='uppercase text-[12px]'>Add new image</Link>
+    <div className='flex justify-center items-center w-full absolute left-0 text-[var(--light-gray]'>
+      <div className='flex gap-4 items-center rounded-sm bg-[var(--light-black)] text-[var(--light-gray)] text-sm p-4 font-favorit-light-c fixed bottom-[70px] border-[#6D6D6D]'>
+        <Link href="/collections" className='p-4 border border-[#6D6D6D] rounded-sm'>View your collections</Link>
+        <Link href="/newimage" className='p-4 border border-[#6D6D6D] rounded-sm'>Add new image</Link>
         <MoodBoard  onGenerateMoodboard={onGenerateMoodboard}/>
       </div>
     </div>
@@ -49,13 +49,13 @@ function MoodBoard({ onGenerateMoodboard }) {
       <div
         tabIndex={0}
         role="button"
-        className="uppercase text-[12px]"
+        className="text-sm p-4 border border-[#6D6D6D] rounded-sm"
         onClick={handleDropdownClick}
       >
-        generate moodboard
+        Generate moodboard
       </div>
       {page !== 0 && (
-        <ul className="absolute bottom-full mb-2 dropdown-content z-[1] menu shadow bg-[var(--background-color-dark)] rounded-box w-52 text-white text-[12px] uppercase">
+        <ul className="absolute bottom-full mb-2 dropdown-content z-[1] menu shadow bg-[var(--light-dark)] rounded-box w-52 text-white text-[12px] uppercase">
           {page === 1 ? (
             <>
               <li

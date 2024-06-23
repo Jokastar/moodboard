@@ -71,11 +71,11 @@ const CollectionImages = ({params}) => {
 
     return (
         <div>
-            <div className='flex items-center justify-between my-4'>
-                <h2 className="text-2xl text-white">{collectionName}</h2>
-                <button className="text-red-600 hover:text-red-500 cursor-pointer" onClick={handleDeleteCollection}>Delete Collection</button>
+            <div className='flex items-center justify-between my-4 border-b-2 border-b-black'>
+                <h2 className="text-lg uppercase">{collectionName}</h2>
+                <button className="text-red-600 hover:text-red-500 cursor-pointer text-sm" onClick={handleDeleteCollection}>Delete Collection</button>
             </div>
-            <button className=" mb-4 text-white hover:text-gray-200 my-4" onClick={() => router.back()}>Back to Collections</button>
+            <button className=" mb-4 hover:text-gray-200 my-4 text-xs" onClick={() => router.back()}>Back to Collections</button>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {images.length === 0 ? (
                     <p className="text-center text-gray-500">No images available.</p>
@@ -104,7 +104,7 @@ const ImageCollectionCard = ({ image, handleImageClick, handleRemoveImage, colle
     };
 
     return (
-        <div key={image._id} className="bg-gray-200 p-4 rounded-lg relative">
+        <div key={image._id} className="bg-black p-4 rounded-sm relative">
             <img
                 src={image.imageCardUrl}
                 alt={image.title}
@@ -114,7 +114,7 @@ const ImageCollectionCard = ({ image, handleImageClick, handleRemoveImage, colle
             <p className="text-center mt-2">{image.title}</p>
             
             <div className="absolute top-2 right-2">
-                <button onClick={toggleDropdown} className="text-white bg-black rounded-[50%] w-4 h-4 focus:outline-none">
+                <button onClick={toggleDropdown} className="text-black bg-white rounded-[50%] w-4 h-4 focus:outline-none">
                     .
                 </button>
                 {dropdownOpen && (

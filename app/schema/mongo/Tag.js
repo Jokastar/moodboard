@@ -3,7 +3,11 @@ import mongoose from "mongoose";
 const tagSchema = new mongoose.Schema({
     tag:{
         type:String,
-        required:true
+        required:true,
+        unique: true
+    },
+    tagEmbedding:{
+        type:[Number]
     }
 })
 

@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";  
-import Gallery from "./components/Gallery";
+import MenuBar from "./components/MenuBar";
+import { useSession } from "next-auth/react";
 import SearchBar from "./components/SearchBar/SearchBar";
 import { getAllImages, getImagesByQuery, getImagesByTags } from "./_actions/images";
+import MasonryGrid from "./components/MasonryGrid/MasonryGrid";
 
 function Home() {
   const [images, setImages] = useState([]); 
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true); 
-
+  const [hasMore, setHasMore] = useState(true);
+  const {data:session} = useSession(); 
+ 
   const handleSearchBarSubmit = async (input) => {
     const requestedImages = await getImagesByQuery(input); 
     setImages(requestedImages); 
@@ -23,9 +26,13 @@ function Home() {
   useEffect(() => {
     const getImages = async () => {
       let { requestedImages, totalPages } = await getAllImages(page); 
-      const newList = [...images, ...requestedImages]; 
-      setImages(newList); 
+      
+      if(requestedImages){
+        const newImagesList = [...images, ...requestedImages]; 
+      setImages(newImagesList); 
       setHasMore(page < totalPages); 
+      }
+      
     }
     getImages(); 
   }, [page])
@@ -43,7 +50,8 @@ function Home() {
   return (
     <>
       <SearchBar handleSubmit={handleSearchBarSubmit} />
-      <Gallery images={images} onGenerateMoodboard={handleGenerateMoodboard} />
+      <MasonryGrid images={images} onGenerateMoodboard={handleGenerateMoodboard}/>
+      {session && <MenuBar onGenerateMoodboard={handleGenerateMoodboard} />}
     </>
   );
 }

@@ -1,23 +1,40 @@
 "use client";
-import React from 'react';
-import {useFormState, useFormStatus} from "react-dom"; 
+import React, { useState } from 'react';
+import { useFormState } from "react-dom";
 import { signUp } from '../auth/signup/_actions/signup';
+import Link from 'next/link';
+
 function SignUpForm() {
-    const [state, formAction] = useFormState(signUp, {}); 
+    const [state, formAction] = useFormState(signUp, {});
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState(null);
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            await formAction({ name, email, password });
+        } catch (e) {
+            setError("Unexpected error occurred");
+        }
+    };
 
     return (
-        <div className="grid grid-cols-2 min-h-[80vh]">
-        <div className="white-space w-full"></div>
-        <form className="grid grid-rows-[20%_80%] w-full h-full" action={formAction}>
-            <div className="whitespace"></div>
-            <div className="form-ctn w-full h-full flex flex-col justify-between">
-                <div className="inputs">
+        <div className='grid grid-cols-2 h-[80vh]'>
+            <div className='white-space w-full'></div>
+            <form className="w-full h-full" onSubmit={handleSubmit}>
+                <div className=" white-space h-[10vh]"></div>
+                <div className='form-ctn w-full flex flex-col gap-14 text-white'>
+                    <p className="uppercase">sign up</p>
                     <div>
                         <input
                             type="text"
                             id="name"
                             name="name"
-                            className="mb-[3rem] w-full text-white text-[1.5rem] focus:outline-none bg-[var(--background-color-dark)] border-b-2 border-b-white placeholder:uppercase placeholder:text-white"
+                            className="w-full text-[1rem] focus:outline-none border-b-2 border-b-white bg-transparent placeholder:uppercase placeholder:text-white"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                             required
                             placeholder="Name"
                         />
@@ -27,7 +44,9 @@ function SignUpForm() {
                             type="email"
                             id="email"
                             name="email"
-                            className="mb-[3rem] w-full text-white text-[1.5rem] focus:outline-none bg-[var(--background-color-dark)] border-b-2 border-b-white placeholder:uppercase placeholder:text-white"
+                            className="w-full text-[1rem] focus:outline-none border-b-2 border-b-white bg-transparent placeholder:uppercase placeholder:text-white"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                             placeholder="Email"
                         />
@@ -37,24 +56,27 @@ function SignUpForm() {
                             type="password"
                             id="password"
                             name="password"
-                            className="mb-[3rem] w-full text-white text-[1.5rem] focus:outline-none bg-[var(--background-color-dark)] border-b-2 border-b-white placeholder:uppercase placeholder:text-white"
+                            className="w-full text-[1rem] focus:outline-none border-b-2 border-b-white bg-transparent placeholder:uppercase placeholder:text-white"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             required
                             placeholder="Password"
                         />
+                        
+                    </div>
+                    {error && <p className='bg-red-600 text-white text-xs p-2 rounded-sm'>{error}</p>}
+                    <div className='submit-ctn'>
+                        <button
+                            type="submit"
+                            className="w-full py-2 px-4 text-black bg-white rounded-sm uppercase"
+                        >
+                            Sign Up
+                        </button>
                     </div>
                 </div>
-                <div className="submit-ctn">
-                    <button
-                        type="submit"
-                        className=" w-full py-2 px-4 text-black bg-white rounded-lg"
-                    >
-                        Sign Up
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-    
+            </form>
+        </div>
     );
 }
+
 export default SignUpForm;

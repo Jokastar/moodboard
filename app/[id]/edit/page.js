@@ -2,13 +2,16 @@
 
 import React, {useEffect, useState} from 'react';
 import { usePathname} from 'next/navigation';
-import ImageForm from '@/app/components/ImageForm'
 import { getImageById } from '@/app/_actions/images';
+import ImageForm from '@/app/components/ImageForm';
 function EditImage() {
+
 const [image, setImage] = useState("");
-const [error, setError] = useState(""); 
+const [error, setError] = useState("");   
 const pathname = usePathname();
 let id = pathname.split('/')[1];
+
+
 useEffect(() => {
     async function fetchImage(id) {
         console.log(id); 
@@ -34,7 +37,7 @@ useEffect(() => {
     )
   }
   return (
-    <ImageForm image={image}/>
+    <ImageForm image={image}/>    
   )
 }
 
