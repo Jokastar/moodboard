@@ -4,6 +4,7 @@ import Collection from "../schema/mongo/Collection";
 import User from "../schema/mongo/User";  
 import Image from "../schema/mongo/Image"
 import { convertObjectIdsToStrings } from "../lib/convertObjectIdsToStrings";
+import { revalidatePath } from "next/cache";
 
 export async function createCollection(prevState, formData) {
 
@@ -31,6 +32,7 @@ export async function createCollection(prevState, formData) {
       await user.save();
 
       console.log('Collection created successfully and added to user:', newCollection);
+      revalidatePath(`http://localhost:3000/${imageId}/addtocollection`); 
       return { success: true,  message:"collection created"};
   } catch (error) {
       console.error('Error creating collection:', error);
@@ -59,6 +61,7 @@ export async function addImageToCollection(collectionId, imageId) {
       collection.images.push(image);
       await collection.save();
       console.log('Image added to collection successfully:', collection);
+      revalidatePath(`http://localhost:3000/${imageId}/addtocollection`); 
       return { success: true};
     } catch (error) {
       console.error('Error adding image to collection:', error);
@@ -76,6 +79,7 @@ export async function addImageToCollection(collectionId, imageId) {
           if (!collection) {
               return { success: false, message: 'Collection not found' };
           }
+          revalidatePath(`http://localhost:3000/${imageId}/addtocollection`); 
           return { success: true};
       } catch (error) {
           console.error('Error removing image from collection:', error);
@@ -92,6 +96,7 @@ export async function deleteCollection(collectionId) {
       return { success: false, message: 'Collection not found' };
     }
     console.log('Collection deleted successfully:', deletedCollection);
+    revalidatePath(`http://localhost:3000/collections/${collectionId}`)
     return { success: true, collection: deletedCollection };
   } catch (error) {
     console.error('Error deleting collection:', error);
@@ -110,7 +115,7 @@ export async function getCollections(userId) {
       console.log('Collections retrieved successfully:', collections);
       
     const updatedCollection = convertObjectIdsToStrings(collections);
-
+      
       return { success: true, collections:updatedCollection};
     } catch (error) {
       console.log('Error retrieving collections:', error);
@@ -149,7 +154,7 @@ export async function getCollectionsForModal(userId) {
     try {
         const collection = await Collection.findOne({ _id: collectionId }).populate('images');
         if (!collection) {
-            console.error('Collection not found');
+            console.log('Collection not found');
             return { success: false, message: 'Collection not found' };
         }
 
@@ -157,14 +162,15 @@ export async function getCollectionsForModal(userId) {
         const collectionWithStrings = {
             _id: collection._id.toString(),
             name: collection.name,
-            images: collection.images.map(image => image._id.toString())
+            images: collection.images.map(image => image._id.toString()),
+            description:collection.description
         };
 
         console.log('Collection retrieved successfully:', collectionWithStrings);
 
         return { success: true, collection: collectionWithStrings };
     } catch (error) {
-        console.error('Error retrieving collection:', error);
+        console.log('Error retrieving collection:', error);
         return { success: false, message: 'Error retrieving collection', error: error.message };
     }
 }

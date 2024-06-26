@@ -22,6 +22,7 @@ function MoodBoard({ onGenerateMoodboard }) {
   const handleClick = async () => {
     await onGenerateMoodboard(tags ? [tags] : []);
     setPage(0); // Close the dropdown after generating the moodboard
+    setTags(""); 
   };
 
   const handleClickOutside = (e) => {
@@ -79,14 +80,18 @@ function MoodBoard({ onGenerateMoodboard }) {
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
                   placeholder="Enter tags"
-                  className="w-full p-1 rounded-md bg-gray-700 text-white placeholder-white focus:bg-gray-700 focus:text-white"
+                  className="w-full my-1 p-2 rounded-md bg-gray-700 text-white placeholder-white focus:bg-gray-700 focus:text-white"
                 />
               </li>
+              
               <li
                 className="cursor-pointer my-1 p-2 rounded-md bg-gray-900 hover:bg-gray-600"
                 onClick={handleClick}
               >
                 generate moodboard
+              </li>
+              <li className="cursor-pointer my-1 p-2 rounded-md bg-gray-900 hover:bg-gray-600 text-white" onClick={()=>setPage(prev => prev - 1)}>
+                Back
               </li>
             </>
           )}

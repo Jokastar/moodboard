@@ -50,7 +50,7 @@ function Home() {
   return (
     <>
       <SearchBar handleSubmit={handleSearchBarSubmit} />
-      <MasonryGrid images={images} onGenerateMoodboard={handleGenerateMoodboard}/>
+      {images?.length > 0 ? <MasonryGrid images={images} onGenerateMoodboard={handleGenerateMoodboard}/> : <p>No image available</p>}
       {session && <MenuBar onGenerateMoodboard={handleGenerateMoodboard} />}
     </>
   );

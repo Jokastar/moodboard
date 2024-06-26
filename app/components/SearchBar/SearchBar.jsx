@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getSuggestions } from './_actions/searchBar';
+import {getSuggestionsVectorSearch } from './_actions/searchBar';
 
 function SearchBar({ handleSubmit }) {
     const [input, setInput] = useState("");
@@ -11,8 +11,11 @@ function SearchBar({ handleSubmit }) {
             return;
         }
         const timeOutId = setTimeout(async () => {
-            const retrieveSuggestions = await getSuggestions(input);
-            setSuggestions(retrieveSuggestions);
+            const retrieveSuggestions = await getSuggestionsVectorSearch(input);
+            if(retrieveSuggestions){
+                setSuggestions(retrieveSuggestions);
+            }
+            
         }, 300);
         return () => clearTimeout(timeOutId);
     }, [input]);
@@ -45,11 +48,11 @@ function SearchBar({ handleSubmit }) {
                 placeholder="Search"
             />
             {suggestions.length > 0 && (
-                <ul className="absolute z-10 list-disc bg-white border rounded-sm mt-1 max-w-[400px]">
+                <ul className="absolute z-10  bg-white border rounded-sm mt-1 max-w-[400px] list-none">
                     {suggestions.map((suggestion, index) => (
                         <li key={index} className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                            onClick={() => handleSuggestionClick(suggestion)}>
-                            {suggestion}
+                            onClick={() => handleSuggestionClick(suggestion.word)}>
+                            {suggestion.word}
                         </li>
                     ))}
                 </ul>

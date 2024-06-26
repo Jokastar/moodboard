@@ -1,33 +1,58 @@
 "use server"; 
 
-import Trie from "@/app/lib/trie";
-import Image from "@/app/schema/mongo/Image";
-import Tag from "@/app/schema/mongo/Tag";
+import WordEmbedding from "@/app/schema/mongo/WordEmbeddings";
+import { getEmbedding } from "@/app/_actions/images";
 
-const SuggestionTrie = new Trie(); 
-(async ()=>{
-    await initTrie(SuggestionTrie);
-})(); 
 
-async function initTrie(trie){
-    try {
-        const images = await Image.find({}).select('name');
-        const tags = await Tag.find({})
 
-        for(let image of images){
-         trie.insert(image.name)
+export async function getSuggestionsVectorSearch(input){
+
+    try{
+      const inputEmbedding = await getEmbedding(input);
+      
+      const agg = [
+        {
+            '$vectorSearch': {
+                'index': 'word_embedding_index',
+                'path': 'embedding',
+                'queryVector': inputEmbedding,
+                'numCandidates': 100,
+                'limit': 8
+            }
+        },
+        {
+            '$project': {
+                '_id': 0,
+                'word': 1,
+                'score': { '$meta': 'vectorSearchScore' }
+            }
+        },
+        {
+            '$sort': {
+                'score': -1 // Sort by score in descending order
+            }
+        },
+        {
+            '$group': {
+                '_id': '$word', // Group by word field
+                'word': { '$first': '$word' },
+                'score': { '$first': '$score' }
+            }
+        },
+        {
+            '$sort': {
+                'score': -1 // Sort by score in descending order again after grouping
+            }
         }
-     
-        for(let tag of tags){
-         trie.insert(tag.tag); 
-        }
-     
-     }catch(e){
-         console.log(error) 
-     }
-}
-export async function getSuggestions(input){
-     const suggestions = SuggestionTrie.wordsWithPrefix(input);
-     return suggestions; 
-}
+    ];
+      
+      const similarWords = await WordEmbedding.aggregate(agg);
+      console.log("similarWords ", similarWords); 
+      if(similarWords.length < 1) return []
+      return similarWords;
 
+    }catch(e){
+      console.log(e);
+      return [];
+    }  
+  }

@@ -51,7 +51,7 @@ const CollectionsGrid = () => {
                 collections.map((collection) => (
                     <div
                         key={collection._id}
-                        className="relative bg-cover bg-center h-[200px] rounded-sm cursor-pointer transform transition-transform duration-200 hover:scale-105"
+                        className="relative bg-cover bg-center h-[300px] rounded-sm cursor-pointer transform transition-transform duration-300 hover:scale-[1.02]"
                         style={{ backgroundImage: `url(${collection.imageUrl})` }}
                         onClick={() => handleCollectionClick(collection._id)}
                     >

@@ -4,10 +4,6 @@ const tagSchema = new mongoose.Schema({
     tag:{
         type:String,
         required:true,
-        unique: true
-    },
-    tagEmbedding:{
-        type:[Number]
     }
 })
 

@@ -2,11 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import { getCollectionsForModal, createCollection, addImageToCollection } from '../_actions/collection';
 import { useSession } from 'next-auth/react';
+import { useRef } from 'react';
 
 function CollectionModal() {
     const [collections, setCollections] = useState([]);
     const [newCollectionName, setNewCollectionName] = useState('');
     const { data: session, status } = useSession();
+    const createCollectionModalRef = useRef(null);
+    const addToCollectionModalRef = useRef(null);
 
     useEffect(() => {
         const getUserCollections = async () => {
@@ -24,14 +27,14 @@ function CollectionModal() {
         };
 
         getUserCollections();
-    }, [session]);
+    }, [session, status]);
 
     const handleAddImage = async (collectionId) => {
         const imageId = window.location.pathname.split('/').pop(); // Extract imageId from URL
-    
+
         try {
             const result = await addImageToCollection(collectionId, imageId);
-    
+
             if (result.success) {
                 console.log('Image added to collection successfully!');
                 alert('Image added to collection successfully!');
@@ -43,9 +46,9 @@ function CollectionModal() {
             console.log('Error adding image to collection:', error);
             alert('Error adding image to collection');
         }
-        document.getElementById('my_modal_3').close();
+        addToCollectionModalRef.current.close();
     };
-    
+
     const handleCreateCollection = async () => {
         try {
             const result = await createCollection(session.user.id, newCollectionName);
@@ -53,7 +56,7 @@ function CollectionModal() {
             if (result.success) {
                 setCollections([...collections, result.collection]);
                 setNewCollectionName('');
-                document.getElementById('create_collection_modal').close();
+                createCollectionModalRef.current.close();
                 alert('Collection created successfully!');
             } else {
                 alert('Failed to create collection: ' + result.message);
@@ -66,9 +69,9 @@ function CollectionModal() {
 
     return (
         <>
-            <button onClick={() => document.getElementById('my_modal_3').showModal()} className="bg-[#4f4f4f] hover:bg-[#383838] text-white rounded-lg">Add to collection</button>
-            <dialog id="my_modal_3" className="modal ">
-                <div className="modal-box">
+            <button onClick={() => addToCollectionModalRef.current.showModal()} className="bg-[#4f4f4f] hover:bg-[#383838] text-white rounded-lg">Add to collection</button>
+            <dialog id="my_modal_3" className="modal" ref={addToCollectionModalRef}>
+                <div className="modal-box bg-[var(--dark-gray)] text-white rounded-sm p-6">
                     <form method="dialog">
                         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                     </form>
@@ -76,12 +79,12 @@ function CollectionModal() {
                     {collections.length === 0 ? (
                         <div>
                             <p className="py-4">No collections found. Create one below:</p>
-                            <button className="btn" onClick={() => document.getElementById('create_collection_modal').showModal()}>Create Collection</button>
+                            <button className="btn" onClick={() => createCollectionModalRef.current.showModal()}>Create Collection</button>
                         </div>
                     ) : (
-                        <div className="collections-list hover:bg-slate-300 w-full">
+                        <div className="collections-list flex flex-col gap-4 py-4">
                             {collections.map((collection) => (
-                                <div key={collection._id} className="collection-item" onClick={() => handleAddImage(collection._id, session.user.id)}>
+                                <div key={collection._id} className="collection-item cursor-pointer bg-[var(--black)] p-2 rounded-sm hover:bg-[var(--gray)]" onClick={() => handleAddImage(collection._id)}>
                                     <p className="collection-name">{collection.name}</p>
                                 </div>
                             ))}
@@ -90,8 +93,8 @@ function CollectionModal() {
                 </div>
             </dialog>
 
-            <dialog id="create_collection_modal" className="modal">
-                <div className="modal-box">
+            <dialog id="create_collection_modal" className="modal" ref={createCollectionModalRef}>
+                <div className="modal-box bg-[var(--dark-gray)] text-white rounded-sm p-6">
                     <form method="dialog">
                         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                     </form>
@@ -102,10 +105,10 @@ function CollectionModal() {
                             value={newCollectionName}
                             onChange={(e) => setNewCollectionName(e.target.value)}
                             placeholder="Collection Name"
-                            className="input input-bordered w-full"
+                            className="input input-bordered w-full bg-transparent text-white border-[var(--black)]"
                         />
                     </div>
-                    <button className="btn btn-primary" onClick={handleCreateCollection}>Create</button>
+                    <button className="btn btn-primary bg-black border-none rounded-md" onClick={handleCreateCollection}>Create</button>
                 </div>
             </dialog>
         </>

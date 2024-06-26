@@ -1,11 +1,10 @@
-"use client"; 
-import React, { useEffect, useRef } from 'react';
-
+import React, { useEffect,useState, useRef } from 'react';
 import Link from 'next/link';
-import './MasonryGrid.css'; // Make sure to include the CSS styles
+import './MasonryGrid.css';
 
-const MasonryGrid = ({ images, onGenerateMoodboard }) => {
+const MasonryGrid = ({ images, collectionMode, handleRemoveImage, collectionId }) => {
   const masonryRef = useRef(null);
+  const layoutTimeout = useRef(null);
 
   const setCols = () => {
     const w = masonryRef.current.offsetWidth;
@@ -47,8 +46,6 @@ const MasonryGrid = ({ images, onGenerateMoodboard }) => {
     }
   };
 
-  const layoutTimeout = useRef(null);
-
   useEffect(() => {
     window.addEventListener('resize', handleResize);
     return () => {
@@ -83,16 +80,52 @@ const MasonryGrid = ({ images, onGenerateMoodboard }) => {
   return (
     <div className="masonry-grid" ref={masonryRef}>
       {images.map((image) => (
-        <div key={image._id} className="masonry-item">
-          <Link href={`/${image._id}`}>
-          <img
-            src={image.imageCardUrl}
-            alt={image.name}
-            style={{ visibility: 'hidden' }}
-          />
-          </Link>
-        </div>
+        <ImageCollectionCard
+          key={image._id}
+          image={image}
+          handleRemoveImage={handleRemoveImage}
+          collectionMode={collectionMode}
+          collectionId={collectionId}
+        />
       ))}
+    </div>
+  );
+};
+
+const ImageCollectionCard = ({ image, handleRemoveImage, collectionMode, collectionId }) => {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  return (
+    <div className="masonry-item bg-black rounded-sm relative">
+      <Link href={`/${image._id}`}>
+        <img
+          src={image.imageCardUrl}
+          alt={image.name}
+          className="w-full h-auto cursor-pointer"
+          style={{ visibility: 'hidden' }}
+        />
+      </Link>
+      {collectionMode && (
+        <div className="absolute top-2 right-2">
+          <button onClick={toggleDropdown} className="text-black bg-white rounded-[50%] w-4 h-4 focus:outline-none">
+            ...
+          </button>
+          {dropdownOpen && (
+            <div className="absolute right-4 top-2 bg-white border rounded-lg shadow-lg">
+              <button
+                onClick={() => handleRemoveImage(collectionId, image._id)}
+                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

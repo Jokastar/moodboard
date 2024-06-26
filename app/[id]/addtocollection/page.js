@@ -6,6 +6,8 @@ import { addImageToCollection, createCollection } from "../../_actions/collectio
 import { useFormState } from "react-dom";
 import useCollections from '@/app/hooks/useCollections';
 
+import Link from 'next/link';
+
 function AddToCollection({ params }) {
     const { data: session } = useSession();
     const imageId = params.id;
@@ -32,10 +34,10 @@ function AddToCollection({ params }) {
     return (
         <div className='flex flex-col gap-4'>
             <div className='grid grid-cols-2 h-[80vh]'>
-                <div className='image-container w-full h-full rounded-sm flex items-center justify-center bg-black'>
-                    <img src={image?.imageUrl} alt={image?.name} className="object-cover" />
+                <div className='image-container w-full h-full rounded-sm flex items-center justify-center bg-black p-4'>
+                    <img src={image?.imageUrl} alt={image?.name} className="object-contain  max-w-full max-h-[70vh]" />
                 </div>
-                <div className='form-container w-full h-full rounded-sm p-5 bg-[var(--light-gray)] relative font-favorit-light-c'>
+                <div className='form-container w-full h-full rounded-sm p-4 bg-[var(--light-gray)] relative font-favorit-light-c'>
                     <h2 className='uppercase text-[1.25rem] font-favorit-c'>{collectionFormPage === 0 ? "Add to collection" : "Create collection"}</h2>
                     {collectionFormPage === 0 ? (
                         collections.length > 0 ? (
@@ -74,6 +76,12 @@ function CollectionRow({ collection, imageId }) {
     const [error, setError] = useState(false);
     const [saved, setSaved] = useState(false);
 
+    useEffect(() => {
+        // Check if imageId is already in collection.images
+        const isImageInCollection = collection.images.includes(imageId);
+        setSaved(isImageInCollection);
+    }, [collection, imageId]);
+
     const handleClick = async () => {
         setError(false);
         try {
@@ -94,7 +102,7 @@ function CollectionRow({ collection, imageId }) {
                 <div className='noOfPhotos rounded-[50%] bg-black text-white w-[20px] h-[20px] flex items-center justify-center text-[10px]'>
                     <span>{collection.images.length}</span>
                 </div>
-                <p>{collection.name}</p>
+                <Link href={`/collections/${collection._id}`}>{collection.name}</Link>
             </div>
             <button
                 className={`px-4 py-2 rounded-lg text-white ${saved ? 'bg-green-500' : 'bg-black'}`}

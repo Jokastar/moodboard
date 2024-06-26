@@ -12,7 +12,7 @@ const collectionSchema = new mongoose.Schema({
   images: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Image' // Reference the Image model
+      ref: 'Image' 
     }
   ],
   createdAt: {

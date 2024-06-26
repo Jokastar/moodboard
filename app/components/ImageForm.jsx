@@ -31,12 +31,28 @@ function ImageForm({ image }) {
     const handleImageChange = async (e) => {
         setError(null);
         const newFile = e.target.files[0];
-        if (newFile && newFile.size > 10 * 1024 * 1024) {
-            setError("Image file exceeds the authorized size");
+        console.log(newFile); 
+    
+        if (!newFile) {
+            setError("No file selected");
             return;
         }
+        
+        if (newFile.size > 1 * 1024 * 1024) {
+            setError("Image file exceeds the authorized size (1MB)");
+            return;
+        }
+    
+        // Check file type
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(newFile.type)) {
+            setError("Unsupported file format. Please select PNG, JPEG, GIF, or WebP.");
+            return;
+        }
+    
         await processImage(newFile);
     };
+    
 
     const processImage = async (file) => {
         setIsLoading(true);
@@ -62,20 +78,13 @@ function ImageForm({ image }) {
     const handleDrop = async (e) => {
         e.preventDefault();
 
-        const droppedFiles = e.dataTransfer.files;
-        if (droppedFiles.length) {
-            const file = droppedFiles[0];
-            if (!file.type || file.type === 'application/octet-stream') {
-                const fileName = file.name.toLowerCase();
-                if (fileName.endsWith('.png')) {
-                    file.type = 'image/png';
-                } else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
-                    file.type = 'image/jpeg';
-                }
-            }
-            fileInputRef.current.files = droppedFiles;
-            await handleImageChange({ target: { files: droppedFiles } });
-        }
+    const droppedFiles = e.dataTransfer.files;
+    if (droppedFiles.length) {
+        const file = droppedFiles[0];
+
+        fileInputRef.current.files = droppedFiles;
+        await handleImageChange({ target: { files: droppedFiles } });
+    }
     }
 
     const handleClick = (e) => {
@@ -118,10 +127,11 @@ function ImageForm({ image }) {
                             name='image'
                         />
                         {!imageUrl && !isLoading && !error && <p className='text-[0.85rem]'>Drop your image here or click to select</p>}
-                        {!imageUrl && !isLoading && !error && <button className='text-[0.85rem] bg-[var(--black)] text-white p-2 rounded-sm border border-white' onClick={handleClick}>choose a file</button>}
+                        {error && <p className='text-[0.85rem] text-red'>{error}</p>}
+                        {!imageUrl && !isLoading && <button className='text-[0.85rem] bg-[var(--black)] text-white p-2 rounded-sm border border-white' onClick={handleClick}>choose a file</button>}
                         {imageUrl && !isLoading && !error && <img className='object-contain max-w-full max-h-[70vh] rounded-sm' src={imageUrl} alt="selectedImage" />}
                         {isLoading && !error && <p>Image loading...</p>}
-                        {error && <p>{error}</p>}
+                        
                     </div>
                 </div>
                 <div className="form-inputs flex flex-col justify-between p-6 bg-[var(--dark-gray)] rounded-sm h-full">
